@@ -1040,6 +1040,13 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   #premiumRewardsApp .pr-btn{min-height:42px;padding:9px 14px;}
   #premiumRewardsApp .pr-ref-code,#premiumRewardsApp .pr-ref-box{max-width:100%;overflow-wrap:anywhere;word-break:break-word;}
 }
+/* Admin mode: keep all 6 bottom-nav items centered on narrow screens */
+@media (max-width:600px){
+  #premiumRewardsApp .pr-bottom-nav{gap:2px;padding:6px 5px;}
+  #premiumRewardsApp .pr-nav-item{min-height:54px;padding:6px 2px;font-size:10px;}
+  #premiumRewardsApp .pr-nav-item i{font-size:19px;margin-bottom:3px;}
+}
+
 @media (max-width:380px){
   #premiumRewardsApp .pr-header{padding-left:10px;padding-right:10px;}
   #premiumRewardsApp .pr-card{margin-left:7px;margin-right:7px;}
@@ -1367,6 +1374,23 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 
 
+    <section id="prAdmin" class="pr-section">
+        <h2><i class="fas fa-user-shield"></i> Admin Panel</h2>
+        <div class="pr-card">
+            <div style="font-weight:700">Telegram Broadcast</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Admin ID: 1790702856</div>
+            <input id="prAdminNotifyTitle" class="pr-input" maxlength="120" placeholder="Notification Title">
+            <textarea id="prAdminNotifyMessage" class="pr-input" maxlength="4096" rows="6" placeholder="সকল user-কে যে message পাঠাবেন..."></textarea>
+            <button class="pr-btn full" onclick="PR_adminBroadcast()"><i class="fas fa-paper-plane"></i> সকল User-কে Send</button>
+            <div id="prAdminStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="pr-card">
+            <div style="font-weight:700;margin-bottom:8px">App Notification</div>
+            <button class="pr-btn success full" onclick="PR_adminInAppBroadcast()"><i class="fas fa-bell"></i> সকল User-এর App Notification</button>
+        </div>
+    </section>
+
+
     <!-- =====================================================
          BOTTOM NAV
          ===================================================== -->
@@ -1376,6 +1400,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         <div class="pr-nav-item" onclick="PR_switchTab('prLeaderboard',this)"><i class="fas fa-trophy"></i>Leaderboard</div>
         <div class="pr-nav-item" onclick="PR_switchTab('prReferral',this)"><i class="fas fa-users"></i>Refer</div>
         <div class="pr-nav-item" onclick="PR_switchTab('prProfile',this)"><i class="fas fa-user"></i>Profile</div>
+        <div id="prAdminNav" class="pr-nav-item" style="display:none" onclick="PR_switchTab('prAdmin',this)"><i class="fas fa-user-shield"></i>Admin</div>
     </div>
 </div>
 
@@ -1389,6 +1414,15 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 (function(){
 
 "use strict";
+
+
+/* =========================================================
+   ADMIN ACCESS / TELEGRAM BROADCAST
+   ========================================================= */
+const PR_ADMIN_IDS = ["1790702856"];
+// IMPORTANT: Never publish a real BotFather token in frontend production.
+// Put your token here only if you accept that users can inspect this HTML.
+const PR_BOT_TOKEN = "PASTE_YOUR_BOT_TOKEN_HERE";
 
 
 /* =========================================================
@@ -1667,11 +1701,8 @@ function PR_initUser(){
 
 
         if(tgUser.photo_url){
-            PR_currentUser.photoUrl = tgUser.photo_url;
-
-            const avatarEl = document.getElementById("prAvatar");
-            if(avatarEl){ avatarEl.src = tgUser.photo_url; }
-
+            PR_currentUser.photoUrl = String(tgUser.photo_url);
+            PR_setAllAvatarSources(PR_currentUser.photoUrl);
         }
 
 
@@ -1806,8 +1837,9 @@ function PR_loadLocalUser(){
 
 
     PR_updateUI();
+    PR_setupAdminUI();
     PR_renderBanners();
-    PR_renderFallbackActivities();
+    PR_renderFallbackActivities;
 
 }
 
@@ -2017,6 +2049,7 @@ async function PR_loadUser(){
 
 
     PR_updateUI();
+    PR_setupAdminUI();
     PR_renderTasks();
     PR_loadNotifications();
     PR_startNotificationListener();
@@ -2041,6 +2074,31 @@ async function PR_loadReferrerName(){
             PR_updateUI();
         }
     }catch(e){}
+}
+
+function PR_avatarFallback(el){
+    if(!el) return;
+    el.onerror=function(){
+        this.onerror=null;
+        this.removeAttribute("src");
+        this.style.background="linear-gradient(135deg,var(--primary),var(--primary2))";
+    };
+}
+
+function PR_setAllAvatarSources(photo){
+    const safePhoto=String(photo||"").trim();
+    ["prAvatar","prAvatarMini","prProfileAvatar"].forEach(id=>{
+        const el=document.getElementById(id);
+        if(!el) return;
+        PR_avatarFallback(el);
+        if(safePhoto){
+            el.style.background="#fff";
+            el.src=safePhoto;
+        }else{
+            el.removeAttribute("src");
+            el.style.background="linear-gradient(135deg,var(--primary),var(--primary2))";
+        }
+    });
 }
 
 function PR_updateUI(){
@@ -2070,16 +2128,7 @@ function PR_updateUI(){
     if(document.getElementById("prJoinDate")) document.getElementById("prJoinDate").innerText = PR_formatDate(PR_currentUser.joinDate);
 
     const photo = PR_currentUser.photoUrl || "";
-    ["prAvatar","prAvatarMini","prProfileAvatar"].forEach(id=>{
-        const el=document.getElementById(id);
-        if(el){
-            if(photo) el.src = photo;
-            else {
-                el.removeAttribute("src");
-                el.style.background = "linear-gradient(135deg,var(--primary),var(--primary2))";
-            }
-        }
-    });
+    PR_setAllAvatarSources(photo);
     const transferBalance = document.getElementById("prTransferBalance");
     if(transferBalance) transferBalance.innerText = balance.toFixed(2);
 
@@ -2323,22 +2372,66 @@ async function PR_loadReferralLevel(level){
     }catch(e){ console.error("Referral list:",e); list.innerHTML='<div class="pr-ref-empty">Referral list load করা যায়নি।</div>'; }
 }
 
-function PR_handleProfileUpload(event){
-    const file=event.target.files?.[0]; if(!file) return;
+async function PR_handleProfileUpload(event){
+    const file=event.target.files?.[0];
+    if(!file) return;
     if(!file.type.startsWith("image/")){ Swal.fire("Invalid File","শুধু image file দিন।","warning"); return; }
-    if(file.size>5*1024*1024){ Swal.fire("File Too Large","৫ MB-এর মধ্যে ছবি দিন।","warning"); return; }
-    if(PR_db && typeof firebase.storage === "function"){
-        Swal.fire({title:"Uploading...",text:"Profile picture upload হচ্ছে",allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-        const path="profilePhotos/"+String(PR_currentUser.id)+"_"+Date.now();
-        firebase.storage().ref(path).put(file).then(snap=>snap.ref.getDownloadURL()).then(url=>{
-            PR_currentUser.photoUrl=url;
-            return PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:url});
-        }).then(()=>{ Swal.close(); PR_updateUI(); Swal.fire({title:"Updated!",text:"Profile picture আপডেট হয়েছে।",icon:"success",timer:1200,showConfirmButton:false});
-        }).catch(e=>{ console.error(e); Swal.close(); Swal.fire("Upload Failed","Profile picture upload করা যায়নি। Firebase Storage Rules check করুন।","error"); });
-    }else{
+    if(file.size>8*1024*1024){ Swal.fire("File Too Large","৮ MB-এর মধ্যে ছবি দিন।","warning"); return; }
+
+    const saveLocalImage=()=>new Promise((resolve,reject)=>{
         const reader=new FileReader();
-        reader.onload=()=>{ PR_currentUser.photoUrl=reader.result; PR_updateUI(); };
+        reader.onload=()=>{
+            const img=new Image();
+            img.onload=()=>{
+                const max=500, scale=Math.min(1,max/Math.max(img.width,img.height));
+                const canvas=document.createElement("canvas");
+                canvas.width=Math.max(1,Math.round(img.width*scale));
+                canvas.height=Math.max(1,Math.round(img.height*scale));
+                const ctx=canvas.getContext("2d");
+                ctx.drawImage(img,0,0,canvas.width,canvas.height);
+                resolve(canvas.toDataURL("image/jpeg",0.78));
+            };
+            img.onerror=reject;
+            img.src=reader.result;
+        };
+        reader.onerror=reject;
         reader.readAsDataURL(file);
+    });
+
+    try{
+        Swal.fire({title:"Uploading...",text:"Profile picture upload হচ্ছে",allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+        let url="";
+
+        // Prefer Firebase Storage when the Storage SDK is available.
+        if(PR_db && typeof firebase.storage === "function"){
+            try{
+                const path="profilePhotos/"+String(PR_currentUser.id)+"_"+Date.now();
+                const snap=await firebase.storage().ref(path).put(file);
+                url=await snap.ref.getDownloadURL();
+            }catch(storageError){
+                console.warn("Storage upload failed; using compressed Firestore image",storageError);
+            }
+        }
+
+        // Fallback: compressed image data URL, so manual photo still works even if Storage rules/SDK fail.
+        if(!url) url=await saveLocalImage();
+
+        PR_currentUser.photoUrl=url;
+        PR_setAllAvatarSources(url);
+
+        if(PR_db && PR_currentUser.id){
+            await PR_db.collection("users").doc(String(PR_currentUser.id)).set({photoUrl:url},{merge:true});
+        }
+        localStorage.setItem("pr_user_data",JSON.stringify(PR_currentUser));
+        Swal.close();
+        PR_updateUI();
+        Swal.fire({title:"Updated!",text:"Profile picture আপডেট হয়েছে।",icon:"success",timer:1200,showConfirmButton:false});
+    }catch(e){
+        console.error("Profile upload error:",e);
+        Swal.close();
+        Swal.fire("Upload Failed","Profile picture save করা যায়নি। Firebase rules/configuration check করুন।","error");
+    }finally{
+        try{ event.target.value=""; }catch(_){}
     }
 }
 
@@ -2667,43 +2760,83 @@ async function PR_applyTaskBonus(referrerId, taskReward, referredName){
    ========================================================= */
 
 async function PR_applyReferralCommission(firstReferrerId){
-    if(!PR_db || !firstReferrerId){ return; }
-
+    if(!PR_db || !firstReferrerId) return;
     try{
-        let currentReferrerId = String(firstReferrerId);
+        let current = String(firstReferrerId);
         const commissions = PR_SETTINGS.referralCommissions || [20,15,10,5,3];
+        const seen = new Set();
+        let directReferrer = null;
 
-        for(let level = 0; level < commissions.length; level++){
-            if(!currentReferrerId){ break; }
+        for(let level=0; level<commissions.length && current; level++){
+            if(seen.has(current)) break;
+            seen.add(current);
 
-            const referrerRef = PR_db.collection("users").doc(currentReferrerId);
-            const referrerSnap = await referrerRef.get();
-            if(!referrerSnap.exists){ break; }
+            const ref = PR_db.collection("users").doc(current);
+            let data = null;
+            const amount = Number(commissions[level] || 0);
 
-            const referrer = referrerSnap.data() || {};
-            const commissionAmount=Number(commissions[level]||0);
-            const updates = {
-                balance: firebase.firestore.FieldValue.increment(commissionAmount),
-                totalIncome: firebase.firestore.FieldValue.increment(commissionAmount),
-                todayIncome: firebase.firestore.FieldValue.increment(commissionAmount),
-                incomeDay:new Date().toISOString().slice(0,10)
-            };
+            await PR_db.runTransaction(async tx=>{
+                const snap = await tx.get(ref);
+                if(!snap.exists) return;
+                data = snap.data() || {};
+                const updates = {
+                    balance: firebase.firestore.FieldValue.increment(amount),
+                    totalIncome: firebase.firestore.FieldValue.increment(amount),
+                    todayIncome: firebase.firestore.FieldValue.increment(amount),
+                    incomeDay: new Date().toISOString().slice(0,10),
+                    // Every ancestor counts this person as a referral at that level.
+                    totalRef: firebase.firestore.FieldValue.increment(1)
+                };
+                tx.update(ref, updates);
+            });
 
-            if(level === 0){
-                updates.totalRef = firebase.firestore.FieldValue.increment(1);
-            }
+            if(!data) break;
+            if(level===0) directReferrer = data;
 
-            await referrerRef.update(updates);
-            await PR_addNotification(currentReferrerId, "Referral Bonus", `আপনার referral থেকে একজন নতুন user যোগ হয়েছে। Level ${level+1} bonus হিসেবে ৳${Number(commissions[level]).toFixed(2)} পেয়েছেন।`);
-            await PR_addActivity(referrer.username || referrer.name, "রেফার কমিশন পেয়েছেন", commissionAmount);
-            currentReferrerId = String(referrer.referrerId || "");
+            await PR_addNotification(
+                current,
+                "Referral Bonus",
+                `আপনার referral chain-এর Level ${level+1} bonus হিসেবে ৳${amount.toFixed(2)} পেয়েছেন।`
+            );
+
+            current = String(data.referrerId || "");
         }
-    }catch(error){
-        console.error("Referral Commission Error:", error);
+
+        // One activity only: the direct referrer got a new referral.
+        if(directReferrer){
+            await PR_addActivity(
+                directReferrer.username || directReferrer.name || "User",
+                "নতুন Referral এসেছে",
+                0
+            );
+        }
+    }catch(e){
+        console.error("Referral Commission Error:",e);
     }
 }
 
-
+/* =========================================================
+   ADMIN ACCESS + BROADCAST
+   ========================================================= */
+function PR_isAdmin(){ return PR_ADMIN_IDS.includes(String(PR_currentUser.id||"")); }
+function PR_setupAdminUI(){ const n=document.getElementById("prAdminNav"); if(n)n.style.display=PR_isAdmin()?"block":"none"; }
+async function PR_getAllUsers(){ if(!PR_db)throw new Error("FIREBASE_UNAVAILABLE"); const snap=await PR_db.collection("users").get(); const a=[]; snap.forEach(d=>a.push({id:String(d.id),...(d.data()||{})})); return a; }
+window.PR_adminInAppBroadcast=async function(){
+ if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
+ const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim(), message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
+ if(!title||!message)return Swal.fire("Missing","Title এবং message দিন।","warning");
+ try{const users=await PR_getAllUsers(); for(let i=0;i<users.length;i+=400){const b=PR_db.batch(); users.slice(i,i+400).forEach(u=>{const r=PR_db.collection("notifications").doc(); b.set(r,{userId:u.id,title,message,read:false,adminBroadcast:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}); await b.commit();} Swal.fire("Sent",`${users.length} জন user-এর App Notification তৈরি হয়েছে।`,"success");}catch(e){console.error(e);Swal.fire("Error","Firebase notification পাঠানো যায়নি।","error");}
+};
+window.PR_adminBroadcast=async function(){
+ if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
+ const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim(), message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim(), status=document.getElementById("prAdminStatus");
+ if(!title||!message)return Swal.fire("Missing","Title এবং message দিন।","warning");
+ if(PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE")return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
+ try{const users=await PR_getAllUsers(), targets=users.filter(u=>/^\d+$/.test(String(u.id))); let sent=0,failed=0; if(!targets.length)return Swal.fire("No Users","Telegram ID পাওয়া যায়নি।","info");
+  for(const u of targets){try{const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:Number(u.id),text:`${title}\n\n${message}`})}); const d=await r.json(); d.ok?sent++:failed++;}catch(e){failed++;} if(status)status.innerText=`Sent: ${sent} | Failed: ${failed} / ${targets.length}`; await new Promise(r=>setTimeout(r,50));}
+  Swal.fire("Broadcast Complete",`Sent: ${sent}<br>Failed: ${failed}`,failed?"warning":"success");
+ }catch(e){console.error(e);Swal.fire("Error","Telegram broadcast failed।","error");}
+};
 /* =========================================================
    MONETAG WATCH AD
    ========================================================= */
