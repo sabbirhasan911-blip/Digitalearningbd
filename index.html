@@ -959,6 +959,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 .pr-ref-copy{border:0;background:var(--primary);color:#fff;border-radius:11px;padding:9px 12px;cursor:pointer}
  .pr-ref-level-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px;margin-top:10px;border-radius:14px;background:rgba(255,255,255,.05);cursor:pointer;border:1px solid rgba(255,255,255,.07);font-size:13px}.pr-ref-level-row i{color:var(--primary2)}.pr-ref-level-action{color:var(--primary2);font-size:12px;white-space:nowrap}.pr-ref-level-list{padding:8px 0 2px}.pr-ref-user{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.035);margin-bottom:6px}.pr-ref-user-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(108,92,231,.18);color:var(--primary2);font-weight:800;font-size:11px}.pr-ref-user-info{flex:1;min-width:0}.pr-ref-user-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-ref-user-info span{display:block;color:var(--muted);font-size:11px}.pr-ref-empty{padding:12px;text-align:center;color:var(--muted);font-size:12px}
 .pr-support-link{text-decoration:none}
+
+.pr-action-btn{background:linear-gradient(145deg,#ffb347,#ff7a00)!important;color:#111!important;box-shadow:0 5px 0 #b94f00,0 8px 18px rgba(255,126,0,.22)!important}
+.pr-income-grid .pr-3d-income b{font-size:34px;line-height:1.05}
+.pr-click-active,.pr-selected,.pr-btn:active,.pr-method:active,.pr-quick:active{background:linear-gradient(145deg,#ffb347,#ff7a00)!important;color:#111!important}
+.pr-btn:focus-visible,.pr-method:focus-visible,.pr-quick:focus-visible{outline:2px solid #ff9f1c;outline-offset:2px}
 @media(max-width:480px){.pr-balance-box{min-width:112px}.pr-home-top{padding-left:10px;padding-right:10px}.pr-banner-wrap{padding-left:10px;padding-right:10px}.pr-home-grid{padding-left:10px;padding-right:10px}.pr-live-list{padding-left:10px;padding-right:10px}}
 
 
@@ -1140,10 +1145,21 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         id="prTask"
         class="pr-section">
 
-        <h2>
-            <i class="fas fa-list-check"></i>
-            Daily Tasks
-        </h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <h2 style="margin:0"><i class="fas fa-list-check"></i> Daily Tasks</h2>
+            <button class="pr-btn pr-action-btn" onclick="PR_openUserTaskForm()"><i class="fas fa-plus"></i> যোগ করুন</button>
+        </div>
+        <div id="prUserTaskForm" class="pr-card" style="display:none;margin-top:12px">
+            <h3 style="margin-top:0">নিজের Paid Task যোগ করুন</h3>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:12px">Task publish হওয়ার আগে Admin Approval লাগবে। মোট খরচ আপনার balance থেকে আগে কেটে রাখা হবে।</div>
+            <input id="prUserTaskName" class="pr-input" maxlength="120" placeholder="Task নাম (যেমন: Facebook Follow)">
+            <input id="prUserTaskLink" class="pr-input" maxlength="500" type="url" placeholder="Task Link / URL">
+            <input id="prUserTaskLimit" class="pr-input" type="number" min="1" step="1" placeholder="Task Limit / কতজন করবে">
+            <input id="prUserTaskRate" class="pr-input" type="number" min="0.01" step="0.01" placeholder="প্রতি User মূল্য (৳)">
+            <textarea id="prUserTaskDetails" class="pr-input" maxlength="1000" rows="3" placeholder="Task-এর বিস্তারিত নির্দেশনা"></textarea>
+            <div id="prUserTaskTotal" style="font-weight:800;margin:5px 0 12px">মোট খরচ: ৳0.00</div>
+            <div style="display:flex;gap:8px"><button class="pr-btn" onclick="PR_submitUserTask()">Submit for Approval</button><button class="pr-btn" style="background:#444" onclick="PR_closeUserTaskForm()">Cancel</button></div>
+        </div>
 
 
         <div
@@ -1279,10 +1295,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <div class="pr-referrer-box">
                 <b>রেফার করেছেন:</b>
                 <div id="prReferrerName" style="color:var(--muted);margin-top:5px">কেউ নেই</div>
-                <div id="prManualRefWrap" style="margin-top:10px">
-                    <input id="prManualRefCode" class="pr-input" type="text" placeholder="Manual Referral Code">
-                    <button class="pr-btn full" onclick="PR_applyManualReferral()">Referral Code Apply</button>
-                </div>
+
             </div>
         </div>        <div class="pr-card pr-profile-withdraw">
             <h3 style="margin-top:0"><i class="fas fa-wallet"></i> Withdraw & Balance Transfer</h3>
@@ -1379,7 +1392,10 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Admin ID: 1790702856</div>
             <input id="prAdminNotifyTitle" class="pr-input" maxlength="120" placeholder="Notification Title">
             <textarea id="prAdminNotifyMessage" class="pr-input" maxlength="4096" rows="6" placeholder="সকল user-কে যে message পাঠাবেন..."></textarea>
+            <input id="prAdminBroadcastPhoto" class="pr-input" type="file" accept="image/*">
+            <input id="prAdminBroadcastPhotoUrl" class="pr-input" type="url" placeholder="অথবা Photo URL দিন (optional)">
             <button class="pr-btn full" onclick="PR_adminBroadcast()"><i class="fas fa-paper-plane"></i> সকল User-কে Send</button>
+            <button class="pr-btn warning full" style="margin-top:8px" onclick="PR_adminBroadcastPhoto()"><i class="fas fa-image"></i> সকল User-কে Photo + Message Send</button>
             <div id="prAdminStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
         </div>
         <div class="pr-card">
@@ -1391,6 +1407,18 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <input id="prAdminSinglePhotoUrl" class="pr-input" type="url" placeholder="অথবা Photo URL দিন (optional)">
             <button class="pr-btn full" onclick="PR_adminSendSingle()"><i class="fas fa-paper-plane"></i> নির্দিষ্ট User-কে Send</button>
             <div id="prAdminSingleStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="pr-card">
+            <div style="font-weight:700">Admin Task Manager</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">নতুন Paid Task তৈরি করুন এবং User-এর Pending Task Approve/Reject করুন।</div>
+            <input id="prAdminTaskName" class="pr-input" maxlength="120" placeholder="Task নাম">
+            <input id="prAdminTaskLink" class="pr-input" maxlength="500" type="url" placeholder="Task Link / URL">
+            <input id="prAdminTaskLimit" class="pr-input" type="number" min="1" placeholder="Task Limit">
+            <input id="prAdminTaskRate" class="pr-input" type="number" min="0.01" step="0.01" placeholder="প্রতি User Rate (৳)">
+            <textarea id="prAdminTaskDetails" class="pr-input" maxlength="1000" rows="3" placeholder="Task বিস্তারিত"></textarea>
+            <div id="prAdminTaskTotal" style="font-weight:800;margin:5px 0 12px">মোট বাজেট: ৳0.00</div>
+            <button class="pr-btn warning full" onclick="PR_adminCreateTask()"><i class="fas fa-plus"></i> Admin Task Add</button>
+            <div id="prAdminPendingTasks" style="margin-top:15px"></div>
         </div>
         <div class="pr-card">
             <div style="font-weight:700;margin-bottom:8px">App Notification</div>
@@ -1726,6 +1754,7 @@ function PR_initUser(){
 
 
         PR_loadUser();
+        PR_tryLoadTelegramPhoto();
 
     }
 
@@ -2070,6 +2099,8 @@ async function PR_loadUser(){
     PR_startActivityListener();
     PR_loadReferrerName();
     PR_loadAdminBanners();
+    PR_loadApprovedTasks();
+    if(PR_isAdmin()) PR_loadPendingAdminTasks();
 
 }
 
@@ -2114,6 +2145,25 @@ function PR_setAllAvatarSources(photo){
     });
 }
 
+async function PR_tryLoadTelegramPhoto(){
+    const tgUser=(PR_tg&&PR_tg.initDataUnsafe&&PR_tg.initDataUnsafe.user)?PR_tg.initDataUnsafe.user:null;
+    if(!tgUser || PR_currentUser.photoUrl || !PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return;
+    try{
+        const q=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getUserProfilePhotos?user_id=${encodeURIComponent(tgUser.id)}&limit=1`);
+        const d=await q.json();
+        const fileId=d?.result?.photos?.[0]?.[0]?.file_id;
+        if(!fileId)return;
+        const f=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`);
+        const fd=await f.json();
+        const path=fd?.result?.file_path;
+        if(!path)return;
+        const url=`https://api.telegram.org/file/bot${PR_BOT_TOKEN}/${path}`;
+        PR_currentUser.photoUrl=url;
+        PR_setAllAvatarSources(url);
+        if(PR_db&&PR_currentUser.id) await PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:url});
+    }catch(e){console.warn("Telegram profile photo fallback failed",e);}
+}
+
 function PR_updateUI(){
     const today = new Date().toISOString().slice(0,10);
     if(PR_currentUser.incomeDay && PR_currentUser.incomeDay !== today){
@@ -2140,7 +2190,9 @@ function PR_updateUI(){
     if(document.getElementById("prManualRefWrap")) document.getElementById("prManualRefWrap").style.display = PR_currentUser.referrerId ? "none" : "block";
     if(document.getElementById("prJoinDate")) document.getElementById("prJoinDate").innerText = PR_formatDate(PR_currentUser.joinDate);
 
-    const photo = PR_currentUser.photoUrl || "";
+    const liveTelegramPhoto = (PR_tg && PR_tg.initDataUnsafe && PR_tg.initDataUnsafe.user) ? String(PR_tg.initDataUnsafe.user.photo_url || "").trim() : "";
+    const photo = liveTelegramPhoto || PR_currentUser.photoUrl || "";
+    if(liveTelegramPhoto) PR_currentUser.photoUrl = liveTelegramPhoto;
     PR_setAllAvatarSources(photo);
     const transferBalance = document.getElementById("prTransferBalance");
     if(transferBalance) transferBalance.innerText = balance.toFixed(2);
@@ -2412,106 +2464,20 @@ async function PR_applyManualReferral(){
    ========================================================= */
 
 function PR_renderTasks(){
-
-    const container =
-    document.getElementById(
-        "prTaskList"
-    );
-
-
-    container.innerHTML = "";
-
-
-    PR_SETTINGS.tasks
-    .forEach(
-    function(task){
-
-        let completed =
-        (
-            PR_currentUser
-            .completedTasks || []
-        ).includes(
-            task.id
-        );
-
-
-        let card =
-        document.createElement(
-            "div"
-        );
-
-
-        card.className =
-        "pr-card";
-
-
-        card.innerHTML = `
-
-            <div class="pr-task">
-
-                <div class="pr-task-icon">
-
-                    <i class="${task.icon}"></i>
-
-                </div>
-
-
-                <div class="pr-task-info">
-
-                    <div class="pr-task-title">
-
-                        ${task.name}
-
-                    </div>
-
-                    <div class="pr-task-reward">
-
-                        ${
-                            completed
-                            ?
-                            "✓ Completed"
-                            :
-                            "+৳" +
-                            PR_SETTINGS.joinReward
-                        }
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="pr-btn
-                    ${completed ? "disabled":""}"
-                    ${completed ? "disabled":""}
-                    onclick="PR_joinTask(
-                        '${task.id}',
-                        '${task.link}'
-                    )">
-
-                    ${
-                        completed
-                        ?
-                        "Completed"
-                        :
-                        "Join"
-                    }
-
-                </button>
-
-            </div>
-
-        `;
-
-
-        container.appendChild(
-            card
-        );
-
+    const container=document.getElementById("prTaskList");
+    if(!container) return;
+    container.innerHTML="";
+    const baseTasks=(PR_SETTINGS.tasks||[]).map(t=>({...t,isPaid:false,reward:Number(PR_SETTINGS.joinReward||0),limit:0,completedCount:0}));
+    const custom=window.PR_approvedTasks||[];
+    [...baseTasks,...custom].forEach(task=>{
+        const completed=(PR_currentUser.completedTasks||[]).includes(String(task.id));
+        const remaining=task.limit>0 ? Math.max(0,Number(task.limit)-Number(task.completedCount||0)) : null;
+        if(task.limit>0 && remaining<=0 && !completed) return;
+        const card=document.createElement("div"); card.className="pr-card";
+        card.innerHTML=`<div class="pr-task"><div class="pr-task-icon"><i class="${PR_escapeHtml(task.icon||"fas fa-bullseye")}"></i></div><div class="pr-task-info"><div class="pr-task-title">${PR_escapeHtml(task.name||"Task")}</div><div class="pr-task-reward">${completed?"✓ Completed":"+৳"+Number(task.reward||0).toFixed(2)}${task.limit>0?" • Limit: "+Number(task.limit):""}</div>${task.details?`<div style="color:var(--muted);font-size:11px;margin-top:4px">${PR_escapeHtml(task.details)}</div>`:""}</div><button class="pr-btn ${completed?"disabled":""}" ${completed?"disabled":""} onclick="PR_joinTask('${String(task.id).replace(/'/g,"\\'")}','${String(task.link||"").replace(/'/g,"\\'")}',${Number(task.reward||0)},${task.isPaid?"true":"false"})">${completed?"Completed":"Join"}</button></div>`;
+        container.appendChild(card);
     });
-
 }
-
 
 /* =========================================================
    JOIN TASK
@@ -2520,8 +2486,11 @@ function PR_renderTasks(){
 window.PR_joinTask =
 async function(
     taskId,
-    link
+    link,
+    taskRewardArg,
+    isPaid
 ){
+    const taskReward=Number(taskRewardArg || PR_SETTINGS.joinReward || 0);
 
     if(
         (
@@ -2599,7 +2568,6 @@ async function(
         );
 
 
-        const taskReward = Number(PR_SETTINGS.joinReward || 0);
         await userRef.update({
             balance: firebase.firestore.FieldValue.increment(taskReward),
             totalIncome: firebase.firestore.FieldValue.increment(taskReward),
@@ -2608,6 +2576,10 @@ async function(
             completedTasks: firebase.firestore.FieldValue.arrayUnion(taskId)
         });
 
+        if(isPaid && PR_db){
+            const taskRef=PR_db.collection("tasks").doc(String(taskId));
+            try{ await taskRef.update({completedCount:firebase.firestore.FieldValue.increment(1)}); }catch(e){}
+        }
         const directReferrerId = PR_currentUser.referrerId || "";
         if(directReferrerId){
             // ৫% bonus is ONLY for the direct (1st-level) referrer.
@@ -2769,7 +2741,7 @@ async function PR_applyReferralCommission(firstReferrerId){
    ADMIN ACCESS + BROADCAST
    ========================================================= */
 function PR_isAdmin(){ return PR_ADMIN_IDS.includes(String(PR_currentUser.id||"")); }
-function PR_setupAdminUI(){ const n=document.getElementById("prAdminNav"); if(n)n.style.display=PR_isAdmin()?"block":"none"; }
+function PR_setupAdminUI(){ const n=document.getElementById("prAdminNav"); if(n)n.style.display=PR_isAdmin()?"block":"none"; if(PR_isAdmin() && window.PR_loadPendingAdminTasks) PR_loadPendingAdminTasks(); }
 async function PR_getAllUsers(){ if(!PR_db)throw new Error("FIREBASE_UNAVAILABLE"); const snap=await PR_db.collection("users").get(); const a=[]; snap.forEach(d=>a.push({id:String(d.id),...(d.data()||{})})); return a; }
 window.PR_adminInAppBroadcast=async function(){
  if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
@@ -2844,6 +2816,66 @@ window.PR_adminSendSingle = async function(){
     }
 };
 
+/* =========================================================
+   ADMIN BROADCAST PHOTO + TASK SYSTEM
+   ========================================================= */
+window.PR_adminBroadcastPhoto=async function(){
+    if(!PR_isAdmin()) return Swal.fire("Access Denied","Admin access নেই।","error");
+    if(PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return Swal.fire("Bot Token Missing","PR_BOT_TOKEN-এ BotFather token বসাতে হবে।","warning");
+    const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim();
+    const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
+    const file=document.getElementById("prAdminBroadcastPhoto")?.files?.[0]||null;
+    const url=(document.getElementById("prAdminBroadcastPhotoUrl")?.value||"").trim();
+    if(!file&&!url) return Swal.fire("Photo Required","একটি photo select করুন বা Photo URL দিন।","warning");
+    try{
+        const users=await PR_getAllUsers(), targets=users.filter(u=>/^\d+$/.test(String(u.id))); let sent=0,failed=0;
+        for(const u of targets){
+            try{
+                const fd=new FormData(); fd.append("chat_id",String(u.id)); if(message) fd.append("caption",message);
+                if(file) fd.append("photo",file); else fd.append("photo",url);
+                const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendPhoto`,{method:"POST",body:fd}); const d=await r.json(); d.ok?sent++:failed++;
+            }catch(e){failed++;}
+            await new Promise(r=>setTimeout(r,60));
+        }
+        Swal.fire("Photo Broadcast Complete",`Sent: ${sent}<br>Failed: ${failed}`,failed?"warning":"success");
+    }catch(e){Swal.fire("Error",e.message||"Broadcast failed","error");}
+};
+function PR_taskTotal(limit,rate){ return Math.max(0,Number(limit||0)*Number(rate||0)); }
+function PR_bindTaskTotals(){
+    const pairs=[['prUserTaskLimit','prUserTaskRate','prUserTaskTotal','মোট খরচ'],['prAdminTaskLimit','prAdminTaskRate','prAdminTaskTotal','মোট বাজেট']];
+    pairs.forEach(([a,b,c,label])=>{const fn=()=>{const el=document.getElementById(c);if(el)el.innerText=label+": ৳"+PR_taskTotal(document.getElementById(a)?.value,document.getElementById(b)?.value).toFixed(2)}; document.getElementById(a)?.addEventListener('input',fn);document.getElementById(b)?.addEventListener('input',fn);});
+}
+window.PR_openUserTaskForm=()=>{if(Number(PR_currentUser.balance||0)<=0)return Swal.fire("Balance Required","Task দেওয়ার জন্য account-এ পর্যাপ্ত balance থাকতে হবে।","warning");document.getElementById("prUserTaskForm").style.display="block";PR_bindTaskTotals();};
+window.PR_closeUserTaskForm=()=>{document.getElementById("prUserTaskForm").style.display="none";};
+window.PR_submitUserTask=async function(){
+    if(!PR_db||!PR_currentUser.id)return;
+    const name=(document.getElementById("prUserTaskName")?.value||"").trim(),link=(document.getElementById("prUserTaskLink")?.value||"").trim(),limit=Number(document.getElementById("prUserTaskLimit")?.value||0),rate=Number(document.getElementById("prUserTaskRate")?.value||0),details=(document.getElementById("prUserTaskDetails")?.value||"").trim(),total=PR_taskTotal(limit,rate);
+    if(!name||!link||limit<1||rate<=0)return Swal.fire("Missing","Task name, link, limit এবং rate দিন।","warning");
+    if(total<=0||total>Number(PR_currentUser.balance||0))return Swal.fire("Insufficient Balance","এই task-এর মোট খরচ ৳"+total.toFixed(2)+"। আপনার balance কম।","warning");
+    try{
+        const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
+        await userRef.update({balance:firebase.firestore.FieldValue.increment(-total)});
+        await PR_db.collection("tasks").add({name,link,limit,rate,reward:rate,totalBudget:total,details,ownerId:String(PR_currentUser.id),ownerUsername:PR_currentUser.username||"",status:"pending",completedCount:0,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isPaid:true,icon:"fas fa-bullseye"});
+        PR_currentUser.balance-=total;PR_updateUI();PR_closeUserTaskForm();
+        ["prUserTaskName","prUserTaskLink","prUserTaskLimit","prUserTaskRate","prUserTaskDetails"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=""});
+        Swal.fire("Submitted","Task Admin Approval-এর জন্য পাঠানো হয়েছে। ৳"+total.toFixed(2)+" balance থেকে reserve করা হয়েছে।","success");
+    }catch(e){Swal.fire("Error",e.message||"Task submit failed","error");}
+};
+window.PR_adminCreateTask=async function(){
+    if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
+    const name=(document.getElementById("prAdminTaskName")?.value||"").trim(),link=(document.getElementById("prAdminTaskLink")?.value||"").trim(),limit=Number(document.getElementById("prAdminTaskLimit")?.value||0),rate=Number(document.getElementById("prAdminTaskRate")?.value||0),details=(document.getElementById("prAdminTaskDetails")?.value||"").trim();
+    if(!name||!link||limit<1||rate<=0)return Swal.fire("Missing","Task name, link, limit এবং rate দিন।","warning");
+    try{await PR_db.collection("tasks").add({name,link,limit,rate,reward:rate,totalBudget:PR_taskTotal(limit,rate),details,ownerId:String(PR_currentUser.id),ownerUsername:PR_currentUser.username||"admin",status:"approved",completedCount:0,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isPaid:true,icon:"fas fa-bullseye"});PR_loadApprovedTasks();Swal.fire("Added","Admin task live হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Task add failed","error");}
+};
+window.PR_loadApprovedTasks=async function(){
+    if(!PR_db)return; try{const snap=await PR_db.collection("tasks").where("status","==","approved").get();window.PR_approvedTasks=[];snap.forEach(d=>window.PR_approvedTasks.push({id:d.id,...d.data(),isPaid:true}));PR_renderTasks();}catch(e){console.error("Approved tasks",e);}
+};
+window.PR_loadPendingAdminTasks=async function(){
+    if(!PR_isAdmin()||!PR_db)return; const box=document.getElementById("prAdminPendingTasks");if(!box)return;box.innerHTML="<div style='color:var(--muted);font-size:12px'>Pending tasks loading...</div>";
+    try{const snap=await PR_db.collection("tasks").where("status","==","pending").get();if(snap.empty){box.innerHTML="<div class='pr-ref-empty'>কোনো pending task নেই।</div>";return;} box.innerHTML="";snap.forEach(d=>{const t={id:d.id,...d.data()};const el=document.createElement("div");el.className="pr-card";el.style.padding="12px";el.innerHTML=`<b>${PR_escapeHtml(t.name)}</b><div style='font-size:11px;color:var(--muted);margin:5px 0'>@${PR_escapeHtml(t.ownerUsername||"")} • Limit ${Number(t.limit||0)} • ৳${Number(t.rate||0).toFixed(2)}/user • Total ৳${Number(t.totalBudget||0).toFixed(2)}</div><div style='font-size:12px;margin-bottom:8px'>${PR_escapeHtml(t.details||"")}</div><button class='pr-btn warning' onclick="PR_adminApproveTask('${d.id}')">Approve</button> <button class='pr-btn' style='background:#7a2020' onclick="PR_adminRejectTask('${d.id}')">Reject + Refund</button>`;box.appendChild(el);});}catch(e){box.innerHTML="<div class='pr-ref-empty'>Pending task load failed.</div>";}
+};
+window.PR_adminApproveTask=async function(id){if(!PR_isAdmin())return;try{await PR_db.collection("tasks").doc(String(id)).update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_loadPendingAdminTasks();Swal.fire("Approved","Task live হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Approve failed","error");}};
+window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)return;const t=snap.data()||{};const total=Number(t.totalBudget||0);if(t.ownerId)await PR_db.collection("users").doc(String(t.ownerId)).update({balance:firebase.firestore.FieldValue.increment(total)});await ref.update({status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadPendingAdminTasks();Swal.fire("Rejected","Task reject হয়েছে এবং ৳"+total.toFixed(2)+" refund করা হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Reject failed","error");}};
 /* =========================================================
    MONETAG WATCH AD
    ========================================================= */
@@ -3523,4 +3555,7 @@ window.addEventListener("beforeunload",function(){
 
 
 })();
+
+// Orange active state for every clickable menu/button/option.
+document.addEventListener("click",function(e){const el=e.target.closest("button,.pr-nav-item,.pr-method,.pr-quick,.pr-ref-level-row");if(!el||el.disabled)return;if(el.classList.contains("pr-nav-item"))return;const group=el.closest(".pr-card,.pr-section,.pr-payment,.pr-home-grid")||document;group.querySelectorAll(".pr-selected").forEach(x=>x.classList.remove("pr-selected"));el.classList.add("pr-selected");});
 </script>
