@@ -1371,7 +1371,7 @@ const PR_FIREBASE_CONFIG = {
 const PR_SETTINGS = {
 
     botUsername:
-    "digitalearningbd_bot",
+    "digitaleraningbd_bot",
 
     miniAppName:
     "app",
@@ -1693,7 +1693,7 @@ function PR_initUser(){
    ========================================================= */
 
 function PR_createReferralLink(){
-    const referralCode = String(PR_currentUser.id || PR_currentUser.username || "").trim();
+    const referralCode = String(PR_currentUser.username || PR_currentUser.id || "").replace(/^@/, "").trim().toLowerCase();
     const codeEl = document.getElementById("prReferralCode");
     if(codeEl){ codeEl.innerText = referralCode || "—"; }
 
@@ -1792,7 +1792,7 @@ async function PR_loadUser(){
                 ? (PR_tg.initDataUnsafe.start_param || "")
                 : "";
             const rawStartParam = tgStartParam;
-            const normalizedStartParam = String(rawStartParam || "").replace(/^ref_/, "");
+            const normalizedStartParam = String(rawStartParam || "").replace(/^ref_/i, "").replace(/^@/, "").trim();
 
             let resolvedReferrerId = "";
             let resolvedReferrerName = "";
@@ -1879,18 +1879,23 @@ async function PR_loadUser(){
             const existingStartParam = PR_tg && PR_tg.initDataUnsafe
                 ? (PR_tg.initDataUnsafe.start_param || "")
                 : "";
-            const existingNormalizedRef = String(existingStartParam || "").replace(/^ref_/, "").trim();
-            if(!data.referrerId && existingNormalizedRef && existingNormalizedRef !== String(PR_currentUser.id)){
+            const existingNormalizedRef = String(existingStartParam || "").replace(/^ref_/i, "").replace(/^@/, "").trim().toLowerCase();
+            if(!data.referrerId && existingNormalizedRef && existingNormalizedRef !== String(PR_currentUser.id).toLowerCase()){
                 try{
-                    const refSnap = await PR_db.collection("users").doc(existingNormalizedRef).get();
-                    if(refSnap.exists){
+                    let refSnap = await PR_db.collection("users").doc(existingNormalizedRef).get();
+                    if(!refSnap.exists){
+                        const q = await PR_db.collection("users").where("username","==",existingNormalizedRef).limit(1).get();
+                        if(!q.empty) refSnap=q.docs[0];
+                    }
+                    if(refSnap && refSnap.exists){
                         const refData = refSnap.data() || {};
+                        const refId = String(refSnap.id);
                         await ref.update({
-                            referrerId: String(existingNormalizedRef),
+                            referrerId: refId,
                             referrerName: refData.name || "User"
                         });
-                        await PR_applyReferralCommission(String(existingNormalizedRef));
-                        data.referrerId = String(existingNormalizedRef);
+                        await PR_applyReferralCommission(refId);
+                        data.referrerId = refId;
                         data.referrerName = refData.name || "User";
                     }
                 }catch(e){ console.error("Existing user referral attach:", e); }
