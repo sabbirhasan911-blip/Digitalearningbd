@@ -1,3 +1,4 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <!-- =========================================================
  PREMIUM REWARDS BOT
  BLOGGER READY VERSION
@@ -990,6 +991,35 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 .pr-other-count{font-weight:800;color:#ffd54f;font-size:12px;white-space:nowrap}
 .pr-leader-empty{text-align:center;color:var(--muted);padding:25px}
 .pr-leader-empty small{display:inline-block;margin-top:6px}
+
+/* =========================================================
+   MOBILE / TELEGRAM WEBVIEW OPTIMIZATION
+   ========================================================= */
+html,body{margin:0;padding:0;width:100%;min-width:0;overflow-x:hidden;}
+body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+#premiumRewardsApp{width:100%;max-width:100vw;min-width:0;overflow-x:hidden;}
+#premiumRewardsApp img, #premiumRewardsApp video{max-width:100%;height:auto;}
+#premiumRewardsApp .pr-card, #premiumRewardsApp .pr-section, #premiumRewardsApp .pr-header{max-width:100%;}
+@media (max-width:600px){
+  #premiumRewardsApp{min-height:100dvh;padding-bottom:92px;}
+  #premiumRewardsApp .pr-header{padding:24px 14px 18px;}
+  #premiumRewardsApp .pr-avatar{width:78px;height:78px;}
+  #premiumRewardsApp .pr-name{font-size:20px;}
+  #premiumRewardsApp .pr-card{margin-left:10px;margin-right:10px;border-radius:14px;}
+  #premiumRewardsApp .pr-bottom-nav{left:0;right:0;width:100%;max-width:100vw;}
+  #premiumRewardsApp .pr-task{gap:8px;}
+  #premiumRewardsApp .pr-task-info{min-width:0;overflow:hidden;}
+  #premiumRewardsApp .pr-task-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #premiumRewardsApp .pr-btn{min-height:42px;padding:9px 14px;}
+  #premiumRewardsApp .pr-ref-code,#premiumRewardsApp .pr-ref-box{max-width:100%;overflow-wrap:anywhere;word-break:break-word;}
+}
+@media (max-width:380px){
+  #premiumRewardsApp .pr-header{padding-left:10px;padding-right:10px;}
+  #premiumRewardsApp .pr-card{margin-left:7px;margin-right:7px;}
+  #premiumRewardsApp .pr-task{flex-wrap:wrap;}
+  #premiumRewardsApp .pr-task .pr-btn{margin-left:auto;}
+}
+
 </style>
 
 
@@ -2649,88 +2679,57 @@ async function PR_applyReferralCommission(firstReferrerId){
    ========================================================= */
 
 window.PR_waitForMonetag =
-function(timeoutMs = 10000){
+function(timeoutMs = 12000){
     return new Promise(resolve => {
-        if(typeof show_11697562 === "function"){
-            resolve(true);
-            return;
-        }
-
-        const started = Date.now();
-        const timer = setInterval(() => {
-            if(typeof show_11697562 === "function"){
-                clearInterval(timer);
-                resolve(true);
-                return;
+        if(typeof window.show_11697562 === "function"){ resolve(true); return; }
+        const started=Date.now();
+        const timer=setInterval(()=>{
+            if(typeof window.show_11697562 === "function"){
+                clearInterval(timer); resolve(true); return;
             }
-            if(Date.now() - started >= timeoutMs){
-                clearInterval(timer);
-                resolve(false);
+            if(Date.now()-started>=timeoutMs){
+                clearInterval(timer); resolve(false);
             }
-        }, 250);
+        },200);
     });
 };
 
 window.PR_watchAd =
 async function(){
+    // IMPORTANT: if Monetag is already loaded, call it immediately while the
+    // user's tap/click is still active. Waiting first can break mobile WebView
+    // gesture requirements.
+    if(typeof window.show_11697562 === "function"){
+        return PR_showMonetagAd();
+    }
 
-    // Keep the call inside the user's button click. This is important for
-    // Telegram/mobile WebViews where popup/ad permissions can be stricter.
-    const sdkReady = await PR_waitForMonetag(10000);
-
-    if(!sdkReady){
-        console.error("Monetag SDK not ready on this device. Check zone 11697562, domain verification, CSP/Cloudflare, network and mobile WebView restrictions.");
-        const isTelegram = !!(window.Telegram && window.Telegram.WebApp);
+    const isTelegram=!!(window.Telegram && window.Telegram.WebApp);
+    const ready=await PR_waitForMonetag(12000);
+    if(!ready){
+        console.error("Monetag SDK did not load. Check zone 11697562, HTTPS/domain verification, CSP, network/ad blocker and Telegram WebView.");
         Swal.fire({
-            title:"Ad এখনো Ready নয়",
+            title:"Ad Load হয়নি",
             html:(isTelegram
-                ? "Telegram mobile WebView-এ Monetag SDK লোড হয়নি।<br><small>একবার app বন্ধ করে আবার খুলে চেষ্টা করুন। তারপরও না হলে mobile browser-এ একই app URL পরীক্ষা করুন।</small>"
-                : "Monetag SDK লোড হয়নি।<br><small>Internet, domain verification এবং ad zone 11697562 active আছে কি না দেখুন।</small>"),
+                ? "Telegram-এ Monetag SDK load হয়নি।<br><small>App-টি close করে আবার খুলুন। Browser-এও পরীক্ষা করুন।</small>"
+                : "Monetag SDK load হয়নি।<br><small>Internet, HTTPS, domain verification এবং zone 11697562 active আছে কি না দেখুন।</small>"),
             icon:"warning"
         });
         return;
     }
+    return PR_showMonetagAd();
+};
 
+async function PR_showMonetagAd(){
     try{
-
-        await show_11697562();
-
-
-        /*
-         IMPORTANT
-
-         Production earning system-এ
-         শুধু frontend থেকে reward দেওয়া
-         নিরাপদ নয়।
-
-         Server-side verification ব্যবহার করা উচিত।
-        */
-
+        await window.show_11697562();
 
         if(!PR_db){
-
-            Swal.fire(
-                "Firebase Error",
-                "Firebase unavailable",
-                "error"
-            );
-
+            Swal.fire("Firebase Error","Firebase unavailable","error");
             return;
-
         }
 
-
-        const userRef =
-        PR_db
-        .collection("users")
-        .doc(
-            String(
-                PR_currentUser.id
-            )
-        );
-
-
-        const adReward = Number(PR_SETTINGS.adReward || 0);
+        const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
+        const adReward=Number(PR_SETTINGS.adReward||0);
         await userRef.update({
             balance:firebase.firestore.FieldValue.increment(adReward),
             totalIncome:firebase.firestore.FieldValue.increment(adReward),
@@ -2739,56 +2738,19 @@ async function(){
             incomeDay:new Date().toISOString().slice(0,10)
         });
 
-
-        PR_currentUser.balance += adReward;
-        PR_currentUser.totalIncome = Number(PR_currentUser.totalIncome||0) + adReward;
-        PR_currentUser.todayIncome = Number(PR_currentUser.todayIncome||0) + adReward;
-        PR_currentUser.adsWatched = Number(PR_currentUser.adsWatched||0) + 1;
-        await PR_addActivity(PR_currentUser.username || PR_currentUser.name, "এডস দেখেছেন", adReward);
-
-
+        PR_currentUser.balance=Number(PR_currentUser.balance||0)+adReward;
+        PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+adReward;
+        PR_currentUser.todayIncome=Number(PR_currentUser.todayIncome||0)+adReward;
+        PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1;
+        await PR_addActivity(PR_currentUser.username || PR_currentUser.name,"এডস দেখেছেন",adReward);
         PR_updateUI();
 
-
-        Swal.fire({
-
-            title:
-            "Ad Complete!",
-
-            text:
-            "৳" +
-            PR_SETTINGS.adReward +
-            " আপনার balance-এ যোগ হয়েছে।",
-
-            icon:
-            "success",
-
-            timer:
-            1800,
-
-            showConfirmButton:
-            false
-
-        });
-
-
+        Swal.fire({title:"Ad Complete!",text:"৳"+PR_SETTINGS.adReward+" আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
     }catch(error){
-
-        console.error(
-            "Monetag Error:",
-            error
-        );
-
-
-        Swal.fire(
-            "Ad Failed",
-            "ভিডিও দেখা সম্পন্ন হয়নি।",
-            "error"
-        );
-
+        console.error("Monetag Error:",error);
+        Swal.fire("Ad Failed","ভিডিও/Ad দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।","error");
     }
-
-};
+}
 
 
 /* =========================================================
