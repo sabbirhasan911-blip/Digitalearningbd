@@ -1873,6 +1873,28 @@ async function PR_loadUser(){
             const data =
             doc.data();
 
+            // If an existing user opens a referral link for the first time,
+            // attach the referrer as long as they do not already have one.
+            // Telegram passes ?startapp=... to initDataUnsafe.start_param.
+            const existingStartParam = PR_tg && PR_tg.initDataUnsafe
+                ? (PR_tg.initDataUnsafe.start_param || "")
+                : "";
+            const existingNormalizedRef = String(existingStartParam || "").replace(/^ref_/, "").trim();
+            if(!data.referrerId && existingNormalizedRef && existingNormalizedRef !== String(PR_currentUser.id)){
+                try{
+                    const refSnap = await PR_db.collection("users").doc(existingNormalizedRef).get();
+                    if(refSnap.exists){
+                        const refData = refSnap.data() || {};
+                        await ref.update({
+                            referrerId: String(existingNormalizedRef),
+                            referrerName: refData.name || "User"
+                        });
+                        await PR_applyReferralCommission(String(existingNormalizedRef));
+                        data.referrerId = String(existingNormalizedRef);
+                        data.referrerName = refData.name || "User";
+                    }
+                }catch(e){ console.error("Existing user referral attach:", e); }
+            }
 
             PR_currentUser.balance =
             Number(
