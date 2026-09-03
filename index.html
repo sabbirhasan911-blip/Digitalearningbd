@@ -1314,8 +1314,8 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
                 <input id="prWallet" class="pr-input" type="tel" placeholder="017xxxxxxxx">
                 <input id="prWithdrawAmount" class="pr-input" type="number" min="1" placeholder="Withdraw Amount">
                 <div style="color:var(--muted);font-size:13px;margin-bottom:15px">
-                    Minimum Withdraw: ৳<span id="prMinWithdraw">500</span><br>
-                    Minimum Referral: <span id="prMinReferral">18</span> জন
+                    Minimum Withdraw: ৳<span id="prMinWithdraw">1000</span><br>
+                    Minimum Referral: <span id="prMinReferral">20</span> জন
                 </div>
                 <button class="pr-btn full" onclick="PR_withdraw()">Submit Withdraw Request</button>
             </div>
@@ -3112,7 +3112,7 @@ async function(){
     ){
         Swal.fire(
             "Minimum Referral",
-            "Withdrawal করতে কমপক্ষে 500 টাকা  " + PR_SETTINGS.minimumReferral + " জন referral লাগবে।",
+            "Withdrawal করতে কমপক্ষে 1000 টাকা  " + PR_SETTINGS.minimumReferral + " জন referral লাগবে।",
             "warning"
         );
         return;
