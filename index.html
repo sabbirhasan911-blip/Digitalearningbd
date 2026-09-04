@@ -2299,6 +2299,33 @@ function PR_renderBanners(){
     },4500);
 }
 
+/* =========================================================
+   GLOBAL TAB / INLINE HANDLERS
+   ========================================================= */
+window.PR_switchTab = function(sectionId, element){
+    try{
+        document.querySelectorAll("#premiumRewardsApp .pr-section").forEach(function(section){
+            section.classList.remove("active");
+        });
+        const target=document.getElementById(String(sectionId));
+        if(!target) return;
+        target.classList.add("active");
+
+        document.querySelectorAll("#premiumRewardsApp .pr-nav-item").forEach(function(item){
+            item.classList.remove("active");
+        });
+        if(element) element.classList.add("active");
+
+        if(sectionId === "prReferral") PR_loadDirectReferrals();
+        if(sectionId === "prLeaderboard") PR_loadLeaderboard();
+        if(sectionId === "prTask") { PR_renderTasks(); PR_loadApprovedTasks(); }
+        if(sectionId === "prProfile") PR_updateUI();
+    }catch(e){ console.error("Tab switch error:",e); }
+};
+
+window.PR_copyReferralCode = PR_copyReferralCode;
+window.PR_loadDirectReferrals = PR_loadDirectReferrals;
+
 window.PR_goTab = function(sectionId){
     const item=[...document.querySelectorAll("#premiumRewardsApp .pr-nav-item")].find(n=>n.getAttribute("onclick")?.includes(sectionId));
     PR_switchTab(sectionId,item || document.querySelector(".pr-nav-item"));
