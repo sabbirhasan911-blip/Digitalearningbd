@@ -957,6 +957,25 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 .pr-ref-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border-radius:15px;background:linear-gradient(145deg,#2b2942,#151421);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 0 rgba(0,0,0,.3);margin:12px 0}
 .pr-ref-code b{font-size:18px;letter-spacing:1px;word-break:break-all}
 .pr-ref-copy{border:0;background:var(--primary);color:#fff;border-radius:11px;padding:9px 12px;cursor:pointer}
+.pr-direct-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+.pr-direct-stat{padding:15px;border-radius:16px;background:linear-gradient(145deg,rgba(108,92,231,.18),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.08);text-align:center}
+.pr-direct-stat b{display:block;font-size:24px;font-weight:900;color:#fff}
+.pr-direct-stat span{display:block;margin-top:4px;color:var(--muted);font-size:11px}
+.pr-direct-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 10px}
+.pr-direct-head h3{margin:0;font-size:17px}
+.pr-direct-refresh{border:0;border-radius:10px;padding:8px 10px;background:rgba(108,92,231,.18);color:var(--primary2);cursor:pointer}
+.pr-direct-list{display:grid;gap:9px}
+.pr-direct-user{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);box-shadow:0 6px 18px rgba(0,0,0,.16)}
+.pr-direct-rank{width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(108,92,231,.2);color:var(--primary2);font-weight:900}
+.pr-direct-avatar{width:46px;height:46px;flex:0 0 46px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.22);background:linear-gradient(135deg,var(--primary),var(--primary2));display:block}
+.pr-direct-info{min-width:0;flex:1}
+.pr-direct-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-direct-username{color:var(--muted);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-direct-joined{color:var(--muted);font-size:10px;margin-top:2px}
+.pr-direct-earning{font-weight:900;color:var(--success);font-size:12px;white-space:nowrap}
+.pr-direct-empty{text-align:center;padding:25px 12px;color:var(--muted);border-radius:15px;background:rgba(255,255,255,.035)}
+@media(max-width:380px){.pr-direct-summary{gap:7px}.pr-direct-user{padding:9px}.pr-direct-avatar{width:42px;height:42px;flex-basis:42px}.pr-direct-earning{font-size:11px}}
+
  .pr-ref-level-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px;margin-top:10px;border-radius:14px;background:rgba(255,255,255,.05);cursor:pointer;border:1px solid rgba(255,255,255,.07);font-size:13px}.pr-ref-level-row i{color:var(--primary2)}.pr-ref-level-action{color:var(--primary2);font-size:12px;white-space:nowrap}.pr-ref-level-list{padding:8px 0 2px}.pr-ref-user{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.035);margin-bottom:6px}.pr-ref-user-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(108,92,231,.18);color:var(--primary2);font-weight:800;font-size:11px}.pr-ref-user-info{flex:1;min-width:0}.pr-ref-user-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-ref-user-info span{display:block;color:var(--muted);font-size:11px}.pr-ref-empty{padding:12px;text-align:center;color:var(--muted);font-size:12px}
 .pr-support-link{text-decoration:none}
 
@@ -1223,55 +1242,46 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <section id="prReferral" class="pr-section">
         <h2><i class="fas fa-users"></i> Referral</h2>
         <div class="pr-card">
-            <div style="font-size:16px;font-weight:700">আপনার Referral Code</div>
+            <div style="font-size:16px;font-weight:800">আপনার Referral Code</div>
+
             <div class="pr-ref-code">
                 <b id="prReferralCode">—</b>
-                <button class="pr-ref-copy" onclick="PR_copyReferralCode()"><i class="fas fa-copy"></i></button>
+                <button class="pr-ref-copy" onclick="PR_copyReferralCode()" aria-label="Copy referral code">
+                    <i class="fas fa-copy"></i>
+                </button>
             </div>
+
             <div class="pr-ref-box" id="prRefLink">Referral Link তৈরি হচ্ছে...</div>
-            <button class="pr-btn full" onclick="PR_copyReferral()"><i class="fas fa-copy"></i> Referral Link Copy</button>
-            <p style="color:var(--muted);font-size:13px;margin-bottom:14px">
-                বেশি বেশি ইনকাম করতে চাইলে রেফার করুন কারন আপনার বন্ধু টাস্ক করলে আপনি পাবেন ৫% বোনাস
-            </p>
+            <button class="pr-btn full" onclick="PR_copyReferral()">
+                <i class="fas fa-copy"></i> Referral Link Copy
+            </button>
 
-            <div class="pr-ref-level-row" onclick="PR_toggleReferralLevel(1)">
-                <span><i class="fas fa-user-group"></i> ১ম লেভেল রেফার লিস্ট</span>
-                <span class="pr-ref-level-action">ক্লিক করে দেখুন <i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div id="prReferralLevel1" class="pr-ref-level-list" style="display:none">
-                <div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>
-            </div>
-
-            <div class="pr-ref-level-row" onclick="PR_toggleReferralLevel(2)">
-                <span><i class="fas fa-user-group"></i> ২য় লেভেল রেফার লিস্ট</span>
-                <span class="pr-ref-level-action">ক্লিক করে দেখুন <i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div id="prReferralLevel2" class="pr-ref-level-list" style="display:none">
-                <div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>
+            <div class="pr-direct-summary">
+                <div class="pr-direct-stat">
+                    <b id="prReferralCount">0</b>
+                    <span>মোট Direct Referral</span>
+                </div>
+                <div class="pr-direct-stat">
+                    <b>৳<span id="prReferralEarned">0.00</span></b>
+                    <span>Referral Commission</span>
+                </div>
             </div>
 
-            <div class="pr-ref-level-row" onclick="PR_toggleReferralLevel(3)">
-                <span><i class="fas fa-user-group"></i> ৩য় লেভেল রেফার লিস্ট</span>
-                <span class="pr-ref-level-action">ক্লিক করে দেখুন <i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div id="prReferralLevel3" class="pr-ref-level-list" style="display:none">
-                <div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>
+            <div style="padding:12px 14px;border-radius:14px;background:rgba(46,213,115,.08);border:1px solid rgba(46,213,115,.2);color:#bff5d3;font-size:12px;line-height:1.55">
+                <i class="fas fa-circle-info"></i>
+                আপনি যাকে সরাসরি রেফার করবেন, শুধু সেই user-ই আপনার Referral List-এ দেখাবে।
+                প্রতিটি নতুন Direct Referral-এর জন্য আপনি <b>৳20</b> কমিশন পাবেন।
             </div>
 
-            <div class="pr-ref-level-row" onclick="PR_toggleReferralLevel(4)">
-                <span><i class="fas fa-user-group"></i> ৪র্থ লেভেল রেফার লিস্ট</span>
-                <span class="pr-ref-level-action">ক্লিক করে দেখুন <i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div id="prReferralLevel4" class="pr-ref-level-list" style="display:none">
-                <div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>
+            <div class="pr-direct-head">
+                <h3><i class="fas fa-user-group"></i> My Direct Referrals</h3>
+                <button class="pr-direct-refresh" onclick="PR_loadDirectReferrals()" title="Refresh">
+                    <i class="fas fa-rotate"></i>
+                </button>
             </div>
 
-            <div class="pr-ref-level-row" onclick="PR_toggleReferralLevel(5)">
-                <span><i class="fas fa-user-group"></i> ৫ম লেভেল রেফার লিস্ট</span>
-                <span class="pr-ref-level-action">ক্লিক করে দেখুন <i class="fas fa-chevron-down"></i></span>
-            </div>
-            <div id="prReferralLevel5" class="pr-ref-level-list" style="display:none">
-                <div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>
+            <div id="prDirectReferralList" class="pr-direct-list">
+                <div class="pr-direct-empty">Referral list লোড হচ্ছে...</div>
             </div>
         </div>
     </section>
@@ -1506,7 +1516,7 @@ const PR_SETTINGS = {
     miniAppName:
     "app",
 
-    referralCommissions:[20,15,10,5,3],
+    referralCommission:20,
 
     minimumReferral:
     18,
@@ -1589,6 +1599,8 @@ let PR_currentUser = {
     photoUrl:"",
     balance:0,
     totalRef:0,
+    directRefCount:0,
+    referralBonusTotal:0,
     referrerId:"",
     referrerName:"",
     totalIncome:0,
@@ -1643,7 +1655,7 @@ try{
    ========================================================= */
 
 const oldRefBonus = document.getElementById("prRefBonus");
-if(oldRefBonus){ oldRefBonus.innerText = "বেশি বেশি ইনকাম করতে চাইলে রেফার করুন কারন আপনার বন্ধু টাস্ক করলে আপনি পাবেন ৫% বোনাস"; }
+if(oldRefBonus){ oldRefBonus.innerText = "আপনার সরাসরি Referral-এর জন্য প্রতিটি নতুন user-এ ৳20 কমিশন পাবেন।"; }
 PR_renderBanners();
 
 
@@ -1963,6 +1975,7 @@ async function PR_loadUser(){
 
                 totalRef:
                 0,
+                referralBonusTotal:0,
 
                 referrerId:resolvedReferrerId,
                 referrerName:resolvedReferrerName,
@@ -2036,10 +2049,9 @@ async function PR_loadUser(){
             );
 
 
-            PR_currentUser.totalRef =
-            Number(
-                data.totalRef || 0
-            );
+            PR_currentUser.totalRef = 0;
+            PR_currentUser.directRefCount = 0;
+            PR_currentUser.referralBonusTotal = Number(data.referralBonusTotal || 0);
 
 
             PR_currentUser.name =
@@ -2098,6 +2110,7 @@ async function PR_loadUser(){
     PR_loadLiveActivities();
     PR_startActivityListener();
     PR_loadReferrerName();
+    PR_loadDirectReferrals();
     PR_loadAdminBanners();
     PR_loadApprovedTasks();
     if(PR_isAdmin()) PR_loadPendingAdminTasks();
@@ -2147,21 +2160,49 @@ function PR_setAllAvatarSources(photo){
 
 async function PR_tryLoadTelegramPhoto(){
     const tgUser=(PR_tg&&PR_tg.initDataUnsafe&&PR_tg.initDataUnsafe.user)?PR_tg.initDataUnsafe.user:null;
-    if(!tgUser || PR_currentUser.photoUrl || !PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return;
+    if(!tgUser) return;
+
+    // Telegram Mini App normally provides photo_url here.
+    const webAppPhoto=String(tgUser.photo_url||"").trim();
+    if(webAppPhoto){
+        PR_currentUser.photoUrl=webAppPhoto;
+        PR_setAllAvatarSources(webAppPhoto);
+        if(PR_db&&PR_currentUser.id){
+            PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:webAppPhoto}).catch(()=>{});
+        }
+        return;
+    }
+
+    // Fallback for Telegram clients that do not expose photo_url in initData.
+    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return;
+
     try{
         const q=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getUserProfilePhotos?user_id=${encodeURIComponent(tgUser.id)}&limit=1`);
         const d=await q.json();
+        if(!d?.ok) return;
+
         const fileId=d?.result?.photos?.[0]?.[0]?.file_id;
-        if(!fileId)return;
+        if(!fileId) return;
+
         const f=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`);
         const fd=await f.json();
+        if(!fd?.ok) return;
+
         const path=fd?.result?.file_path;
-        if(!path)return;
+        if(!path) return;
+
         const url=`https://api.telegram.org/file/bot${PR_BOT_TOKEN}/${path}`;
         PR_currentUser.photoUrl=url;
         PR_setAllAvatarSources(url);
-        if(PR_db&&PR_currentUser.id) await PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:url});
-    }catch(e){console.warn("Telegram profile photo fallback failed",e);}
+
+        // This URL contains the bot token and may expire; use only as a fallback.
+        // Prefer Telegram's WebApp photo_url whenever available.
+        if(PR_db&&PR_currentUser.id){
+            PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:url}).catch(()=>{});
+        }
+    }catch(e){
+        console.warn("Telegram profile photo fallback failed",e);
+    }
 }
 
 function PR_updateUI(){
@@ -2183,7 +2224,10 @@ function PR_updateUI(){
     if(document.getElementById("prTotalIncome")) document.getElementById("prTotalIncome").innerText = Number(PR_currentUser.totalIncome || 0).toFixed(2);
     if(document.getElementById("prAdsWatched")) document.getElementById("prAdsWatched").innerText = Number(PR_currentUser.adsWatched || 0);
     if(document.getElementById("prTasksDone")) document.getElementById("prTasksDone").innerText = (PR_currentUser.completedTasks || []).length;
-    if(document.getElementById("prHistoryRefs")) document.getElementById("prHistoryRefs").innerText = Number(PR_currentUser.totalRef || 0);
+    const directRefCount = Number(PR_currentUser.directRefCount ?? PR_currentUser.totalRef ?? 0);
+    if(document.getElementById("prHistoryRefs")) document.getElementById("prHistoryRefs").innerText = directRefCount;
+    if(document.getElementById("prReferralCount")) document.getElementById("prReferralCount").innerText = directRefCount;
+    if(document.getElementById("prReferralEarned")) document.getElementById("prReferralEarned").innerText = (directRefCount * Number(PR_SETTINGS.referralCommission || 20)).toFixed(2);
     if(document.getElementById("prWithdrawnTotal")) document.getElementById("prWithdrawnTotal").innerText = Number(PR_currentUser.totalWithdrawn || 0).toFixed(2);
     if(document.getElementById("prTaskBonusTotal")) document.getElementById("prTaskBonusTotal").innerText = Number(PR_currentUser.taskBonusTotal || 0).toFixed(2);
     if(document.getElementById("prReferrerName")) document.getElementById("prReferrerName").innerText = PR_currentUser.referrerName || "কেউ নেই";
@@ -2391,50 +2435,79 @@ function PR_copyReferralCode(){
     if(navigator.clipboard) navigator.clipboard.writeText(code).then(()=>Swal.fire({title:"Copied!",text:"Referral code copy হয়েছে।",icon:"success",timer:1200,showConfirmButton:false}));
 }
 
-window.PR_toggleReferralLevel = async function(level){
-    const list=document.getElementById("prReferralLevel"+level);
+async function PR_loadDirectReferrals(){
+    const list=document.getElementById("prDirectReferralList");
     if(!list) return;
-    const isOpen=list.style.display !== "none";
-    list.style.display=isOpen ? "none" : "block";
-    if(isOpen) return;
-    await PR_loadReferralLevel(level);
-};
 
-async function PR_loadReferralLevel(level){
-    const list=document.getElementById("prReferralLevel"+level);
-    if(!list) return;
-    if(!PR_db || !PR_currentUser.id){ list.innerHTML='<div class="pr-ref-empty">Firebase unavailable</div>'; return; }
-    list.innerHTML='<div class="pr-ref-empty">লিস্ট লোড হচ্ছে...</div>';
+    if(!PR_db || !PR_currentUser.id){
+        list.innerHTML='<div class="pr-direct-empty">Firebase unavailable</div>';
+        return;
+    }
+
+    list.innerHTML='<div class="pr-direct-empty">Referral list লোড হচ্ছে...</div>';
+
     try{
-        // Build the requested referral level by walking the referrerId tree.
-        let parentIds=[String(PR_currentUser.id)];
-        let users=[];
-        for(let currentLevel=1; currentLevel<=level; currentLevel++){
-            const nextIds=[];
-            for(let i=0;i<parentIds.length;i+=10){
-                const chunk=parentIds.slice(i,i+10);
-                const snaps=await Promise.all(chunk.map(parentId=>
-                    PR_db.collection("users").where("referrerId","==",String(parentId)).limit(100).get()
-                ));
-                snaps.forEach(snap=>snap.forEach(d=>{
-                    const u={id:d.id,...d.data()};
-                    nextIds.push(String(d.id));
-                    if(currentLevel===level) users.push(u);
-                }));
-            }
-            if(currentLevel===level) break;
-            parentIds=[...new Set(nextIds)];
-            if(!parentIds.length) break;
+        const snap=await PR_db.collection("users")
+            .where("referrerId","==",String(PR_currentUser.id))
+            .get();
+
+        const users=[];
+        snap.forEach(d=>{
+            users.push({id:d.id,...(d.data()||{})});
+        });
+
+        users.sort((a,b)=>{
+            const aTime=a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.joinDate||0).getTime();
+            const bTime=b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.joinDate||0).getTime();
+            return (bTime||0)-(aTime||0);
+        });
+
+        const count=users.length;
+        PR_currentUser.directRefCount=count;
+
+        const countEl=document.getElementById("prReferralCount");
+        if(countEl) countEl.innerText=count;
+
+        const earnedEl=document.getElementById("prReferralEarned");
+        if(earnedEl) earnedEl.innerText=(count*Number(PR_SETTINGS.referralCommission||20)).toFixed(2);
+
+        const historyEl=document.getElementById("prHistoryRefs");
+        if(historyEl) historyEl.innerText=count;
+
+        // Keep the in-memory direct count aligned with the new referral system.
+        PR_currentUser.totalRef=count;
+
+        if(!users.length){
+            list.innerHTML='<div class="pr-direct-empty"><i class="fas fa-user-plus" style="font-size:24px;margin-bottom:8px"></i><br>এখনও কোনো Direct Referral নেই।<br><small>আপনার Referral Link শেয়ার করুন।</small></div>';
+            return;
         }
 
-        if(!users.length){ list.innerHTML='<div class="pr-ref-empty">এই লেভেলে এখনও কোনো referral পাওয়া যায়নি।</div>'; return; }
-        list.innerHTML=users.map(u=>{
+        list.innerHTML=users.map((u,index)=>{
             const name=u.name||u.username||"User";
-            const uname=u.username?"@"+u.username:"ID: "+u.id;
-            const initials=String(name).slice(0,2).toUpperCase();
-            return `<div class="pr-ref-user"><div class="pr-ref-user-avatar">${initials}</div><div class="pr-ref-user-info"><b>${PR_escapeHtml(name)}</b><span>${PR_escapeHtml(uname)}</span></div></div>`;
+            const uname=u.username ? "@"+u.username : "Telegram ID: "+u.id;
+            const initials=String(name).trim().slice(0,2).toUpperCase() || "U";
+            const photo=String(u.photoUrl||"").trim();
+            const avatar=photo
+                ? `<img class="pr-direct-avatar" src="${PR_escapeHtml(photo)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="pr-direct-avatar" style="display:none;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div>`
+                : `<div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div>`;
+            const joined=PR_formatDate(u.joinDate||u.createdAt);
+            return `<div class="pr-direct-user">
+                <div class="pr-direct-rank">${index+1}</div>
+                ${avatar}
+                <div class="pr-direct-info">
+                    <div class="pr-direct-name">${PR_escapeHtml(name)}</div>
+                    <div class="pr-direct-username">${PR_escapeHtml(uname)}</div>
+                    <div class="pr-direct-joined">Joined: ${PR_escapeHtml(joined)}</div>
+                </div>
+                <div class="pr-direct-earning">+৳${Number(PR_SETTINGS.referralCommission||20).toFixed(0)}</div>
+            </div>`;
         }).join("");
-    }catch(e){ console.error("Referral list:",e); list.innerHTML='<div class="pr-ref-empty">Referral list load করা যায়নি।</div>'; }
+
+        PR_updateUI();
+    }catch(e){
+        console.error("Direct referral list:",e);
+        list.innerHTML='<div class="pr-direct-empty">Referral list load করা যায়নি।</div>';
+    }
 }
 
 async function PR_applyManualReferral(){
@@ -2678,62 +2751,50 @@ async function PR_applyTaskBonus(referrerId, taskReward, referredName){
 }
 
 /* =========================================================
-   5 LEVEL REFERRAL COMMISSION
+   DIRECT REFERRAL COMMISSION
    ========================================================= */
 
-async function PR_applyReferralCommission(firstReferrerId){
-    if(!PR_db || !firstReferrerId) return;
+async function PR_applyReferralCommission(referrerId){
+    if(!PR_db || !referrerId) return;
     try{
-        let current = String(firstReferrerId);
-        const commissions = PR_SETTINGS.referralCommissions || [20,15,10,5,3];
-        const seen = new Set();
-        let directReferrer = null;
+        const refId=String(referrerId);
+        const amount=Number(PR_SETTINGS.referralCommission || 20);
+        if(amount<=0) return;
 
-        for(let level=0; level<commissions.length && current; level++){
-            if(seen.has(current)) break;
-            seen.add(current);
+        const ref=PR_db.collection("users").doc(refId);
+        let refData=null;
 
-            const ref = PR_db.collection("users").doc(current);
-            let data = null;
-            const amount = Number(commissions[level] || 0);
+        await PR_db.runTransaction(async tx=>{
+            const snap=await tx.get(ref);
+            if(!snap.exists) return;
 
-            await PR_db.runTransaction(async tx=>{
-                const snap = await tx.get(ref);
-                if(!snap.exists) return;
-                data = snap.data() || {};
-                const updates = {
-                    balance: firebase.firestore.FieldValue.increment(amount),
-                    totalIncome: firebase.firestore.FieldValue.increment(amount),
-                    todayIncome: firebase.firestore.FieldValue.increment(amount),
-                    incomeDay: new Date().toISOString().slice(0,10),
-                    // Every ancestor counts this person as a referral at that level.
-                    totalRef: firebase.firestore.FieldValue.increment(1)
-                };
-                tx.update(ref, updates);
+            refData=snap.data() || {};
+            tx.update(ref,{
+                balance:firebase.firestore.FieldValue.increment(amount),
+                totalIncome:firebase.firestore.FieldValue.increment(amount),
+                todayIncome:firebase.firestore.FieldValue.increment(amount),
+                referralBonusTotal:firebase.firestore.FieldValue.increment(amount),
+                // IMPORTANT: totalRef now means DIRECT referrals only.
+                totalRef:firebase.firestore.FieldValue.increment(1),
+                incomeDay:new Date().toISOString().slice(0,10)
             });
+        });
 
-            if(!data) break;
-            if(level===0) directReferrer = data;
+        if(!refData) return;
 
-            await PR_addNotification(
-                current,
-                "Referral Bonus",
-                `আপনার referral chain-এর Level ${level+1} bonus হিসেবে ৳${amount.toFixed(2)} পেয়েছেন।`
-            );
+        await PR_addNotification(
+            refId,
+            "নতুন Direct Referral 🎉",
+            `আপনার সরাসরি referral-এর জন্য ৳${amount.toFixed(2)} কমিশন যোগ হয়েছে।`
+        );
 
-            current = String(data.referrerId || "");
-        }
-
-        // One activity only: the direct referrer got a new referral.
-        if(directReferrer){
-            await PR_addActivity(
-                directReferrer.username || directReferrer.name || "User",
-                "নতুন Referral এসেছে",
-                0
-            );
-        }
+        await PR_addActivity(
+            refData.username || refData.name || "User",
+            "নতুন Direct Referral এসেছে",
+            amount
+        );
     }catch(e){
-        console.error("Referral Commission Error:",e);
+        console.error("Direct Referral Commission Error:",e);
     }
 }
 
@@ -3384,6 +3445,7 @@ window.PR_transferBalance = async function(){
 
 async function PR_loadLeaderboard(){
     const container = document.getElementById("prLeaderboardList");
+    if(!container) return;
 
     if(!PR_db){
         container.innerHTML = "<div style='text-align:center;color:var(--muted)'>Firebase configure করা হয়নি।</div>";
@@ -3392,18 +3454,30 @@ async function PR_loadLeaderboard(){
 
     try{
         const snapshot = await PR_db.collection("users").get();
-        const users = [];
+        const counts = new Map();
+        const userData = new Map();
 
         snapshot.forEach(function(doc){
             const user = doc.data() || {};
-            const totalRef = Number(user.totalRef || 0);
+            const id=String(doc.id);
+            userData.set(id,user);
 
-            // Only users who have referred at least one person appear.
-            if(totalRef > 0){
+            const referrerId=String(user.referrerId || "");
+            if(referrerId){
+                counts.set(referrerId,(counts.get(referrerId)||0)+1);
+            }
+        });
+
+        const users=[];
+        counts.forEach(function(totalRef,userId){
+            const user=userData.get(userId)||{};
+            if(totalRef>0){
                 users.push({
-                    name: user.name || user.username || "User",
-                    username: user.username || "",
-                    totalRef: totalRef
+                    id:userId,
+                    name:user.name || user.username || "User",
+                    username:user.username || "",
+                    photoUrl:user.photoUrl || "",
+                    totalRef:totalRef
                 });
             }
         });
@@ -3413,12 +3487,21 @@ async function PR_loadLeaderboard(){
             return String(a.name).localeCompare(String(b.name));
         });
 
-        const topUsers = users.slice(0, 50);
+        const topUsers = users.slice(0,50);
 
         if(!topUsers.length){
             container.innerHTML =
-                "<div class='pr-leader-empty'>এখনও কেউ referral করেনি।<br><small>প্রথম referral করলেই আপনি Leaderboard-এ আসবেন।</small></div>";
+                "<div class='pr-leader-empty'>এখনও কেউ referral করেনি।<br><small>প্রথম Direct Referral করলেই আপনি Leaderboard-এ আসবেন।</small></div>";
             return;
+        }
+
+        function avatarHtml(user, sizeClass){
+            const initials=String(user.name||"U").trim().slice(0,2).toUpperCase() || "U";
+            const photo=String(user.photoUrl||"").trim();
+            if(photo){
+                return `<img class="${sizeClass}" src="${PR_escapeHtml(photo)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="${sizeClass}" style="display:none;align-items:center;justify-content:center;color:#fff;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--primary2))">${PR_escapeHtml(initials)}</div>`;
+            }
+            return `<div class="${sizeClass}" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--primary2))">${PR_escapeHtml(initials)}</div>`;
         }
 
         const top3 = topUsers.slice(0,3);
@@ -3433,9 +3516,10 @@ async function PR_loadLeaderboard(){
                 <div class="pr-podium-place ${placeClass[index]}">
                     <div class="pr-podium-crown">${crown[index]}</div>
                     <div class="pr-podium-medal">${medal[index]}</div>
+                    ${avatarHtml(user,"pr-podium-avatar")}
                     <div class="pr-podium-rank">TOP ${index+1}</div>
                     <div class="pr-podium-name">${PR_escapeHtml(user.name)}</div>
-                    <div class="pr-podium-balance">${user.totalRef} জন referral</div>
+                    <div class="pr-podium-balance">${user.totalRef} জন Direct Referral</div>
                     <div class="pr-podium-coins">✦ ✦ ✦</div>
                 </div>
             `;
@@ -3446,6 +3530,7 @@ async function PR_loadLeaderboard(){
             return `
                 <div class="pr-other-leader">
                     <div class="pr-other-rank">${rank}</div>
+                    ${avatarHtml(user,"pr-other-avatar")}
                     <div class="pr-other-user">
                         <div class="pr-other-name">${PR_escapeHtml(user.name)}</div>
                         ${user.username ? `<div class="pr-other-username">@${PR_escapeHtml(user.username)}</div>` : ""}
@@ -3465,72 +3550,6 @@ async function PR_loadLeaderboard(){
             "<div style='text-align:center;color:#ff4757'>Leaderboard load করা যায়নি।</div>";
     }
 }
-
-/* =========================================================
-   TAB SWITCH
-   ========================================================= */
-
-window.PR_switchTab =
-function(
-    sectionId,
-    element
-){
-
-    document
-    .querySelectorAll(
-        "#premiumRewardsApp .pr-section"
-    )
-    .forEach(
-    function(section){
-
-        section.classList.remove(
-            "active"
-        );
-
-    });
-
-
-    const target=document.getElementById(sectionId);
-    if(!target) return;
-    target.classList.add("active");
-
-
-    document
-    .querySelectorAll(
-        "#premiumRewardsApp .pr-nav-item"
-    )
-    .forEach(
-    function(item){
-
-        item.classList.remove(
-            "active"
-        );
-
-    });
-
-
-    element.classList.add(
-        "active"
-    );
-
-
-    if(
-        sectionId ===
-        "prLeaderboard"
-    ){
-
-        PR_loadLeaderboard();
-
-    }
-    if(sectionId === "prReferral") {
-        const open1=document.getElementById("prReferralLevel1");
-        const open2=document.getElementById("prReferralLevel2");
-        if(open1 && open1.style.display !== "none") PR_loadReferralLevel(1);
-        if(open2 && open2.style.display !== "none") PR_loadReferralLevel(2);
-    }
-
-};
-
 
 /* =========================================================
    START
