@@ -3021,22 +3021,18 @@ function(timeoutMs = 12000){
 
 window.PR_watchAd =
 async function(){
-    // IMPORTANT: if Monetag is already loaded, call it immediately while the
-    // user's tap/click is still active. Waiting first can break mobile WebView
-    // gesture requirements.
+    // Keep the ad request inside the user's tap gesture on mobile Telegram WebView.
     if(typeof window.show_11697562 === "function"){
         return PR_showMonetagAd();
     }
-
     const isTelegram=!!(window.Telegram && window.Telegram.WebApp);
     const ready=await PR_waitForMonetag(12000);
     if(!ready){
-        console.error("Monetag SDK did not load. Check zone 11697562, HTTPS/domain verification, CSP, network/ad blocker and Telegram WebView.");
         Swal.fire({
             title:"Ad Load হয়নি",
             html:(isTelegram
-                ? "Telegram-এ Monetag SDK load হয়নি।<br><small>App-টি close করে আবার খুলুন। Browser-এও পরীক্ষা করুন।</small>"
-                : "Monetag SDK load হয়নি।<br><small>Internet, HTTPS, domain verification এবং zone 11697562 active আছে কি না দেখুন।</small>"),
+                ? "Telegram-এ Ad SDK load হয়নি।<br><small>App close করে আবার খুলুন এবং HTTPS/domain/SDK zone 11697562 পরীক্ষা করুন।</small>"
+                : "Ad SDK load হয়নি।<br><small>HTTPS, domain verification এবং zone 11697562 active আছে কি না দেখুন।</small>"),
             icon:"warning"
         });
         return;
@@ -3045,55 +3041,79 @@ async function(){
 };
 
 async function PR_showMonetagAd(){
+    if(PR_showMonetagAd.busy) return;
+    PR_showMonetagAd.busy=true;
     try{
         await window.show_11697562();
-
-        if(!PR_db){
-            Swal.fire("Firebase Error","Firebase unavailable","error");
-            return;
-        }
+        if(!PR_db) throw new Error("FIREBASE_UNAVAILABLE");
 
         const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
         const adReward=Number(PR_SETTINGS.adReward||0);
-        const adTxId="AD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+        const adTxId="AD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
+
         await PR_db.runTransaction(async(transaction)=>{
             const snap=await transaction.get(userRef);
             if(!snap.exists) throw new Error("USER_NOT_FOUND");
             const d=snap.data()||{};
             const before=Number(d.balance||0);
+            const after=Number((before+adReward).toFixed(2));
+            const today=new Date().toISOString().slice(0,10);
+            const todayIncome=String(d.incomeDay||"")===today
+                ? Number(d.todayIncome||0)+adReward
+                : adReward;
             transaction.update(userRef,{
-                balance:before+adReward,
+                balance:after,
                 totalIncome:Number(d.totalIncome||0)+adReward,
-                todayIncome:String(d.incomeDay||"")===new Date().toISOString().slice(0,10) ? Number(d.todayIncome||0)+adReward : adReward,
+                todayIncome,
                 adsWatched:Number(d.adsWatched||0)+1,
-                incomeDay:new Date().toISOString().slice(0,10)
+                incomeDay:today
             });
             transaction.set(PR_db.collection("earningTransactions").doc(adTxId),{
-                transactionId:adTxId,type:"ad_reward",userId:String(PR_currentUser.id),
-                amount:adReward,beforeBalance:before,afterBalance:before+adReward,
+                transactionId:adTxId,type:"ad_reward",source:"monetag",userId:String(PR_currentUser.id),
+                amount:adReward,beforeBalance:before,afterBalance:after,status:"completed",
                 createdAt:firebase.firestore.FieldValue.serverTimestamp()
             });
         });
 
-        PR_currentUser.balance=Number(PR_currentUser.balance||0)+adReward;
+        PR_currentUser.balance=Number((Number(PR_currentUser.balance||0)+adReward).toFixed(2));
         PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+adReward;
         PR_currentUser.todayIncome=Number(PR_currentUser.todayIncome||0)+adReward;
         PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1;
         PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;
-        if(PR_currentUser.videoCountSincePopup>=50){PR_currentUser.videoCountSincePopup=0;setTimeout(()=>PR_video50Popup(),250);}
-        await PR_addActivity(PR_currentUser.username || PR_currentUser.name,"এডস দেখেছেন",adReward);
-        if(PR_currentUser.referrerId) await PR_applyTaskBonus(PR_currentUser.referrerId,adReward,PR_currentUser.name||PR_currentUser.username||"User");
+
+        if(PR_currentUser.videoCountSincePopup>=50){
+            PR_currentUser.videoCountSincePopup=0;
+            setTimeout(()=>PR_video50Popup(),250);
+        }
+
+        // 3-level commission: 5% / 2% / 1%, only once per earning transaction.
+        if(PR_currentUser.referrerId){
+            await PR_applyTaskBonus(
+                PR_currentUser.referrerId,
+                adReward,
+                PR_currentUser.name||PR_currentUser.username||"User",
+                adTxId,
+                "ad"
+            );
+        }
+
+        await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",adReward);
         PR_updateUI();
 
-        Swal.fire({title:"Ad Complete!",text:"৳"+PR_SETTINGS.adReward+" আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
+        Swal.fire({
+            title:"Ad Complete!",
+            text:"৳"+adReward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",
+            icon:"success",timer:1800,showConfirmButton:false
+        });
     }catch(error){
         console.error("Monetag Error:",error);
         Swal.fire("Ad Failed","ভিডিও/Ad দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।","error");
+    }finally{
+        PR_showMonetagAd.busy=false;
     }
 }
 
-
-function PR_video50Popup(){Swal.fire({title:"🎊 অভিনন্দন!",html:"আপনি ৫০টি ভিডিও দেখেছেন ❤️<br><br>আরও ভিডিও দেখতে চান?",icon:"success",showCancelButton:true,confirmButtonText:"হ্যাঁ",cancelButtonText:"না"}).then(r=>{if(!r.isConfirmed)PR_goTab("prHome");});}
+function PR_video50Popup(){Swal.fire({title:"🎊 অভিনন্দন!",html:"আপনি ৫০টি ভিডিও দেখেছেন ❤️<br><br>আপনি কি আরও ভিডিও দেখা চালিয়ে যেতে আগ্রহী? 🤔",icon:"success",showCancelButton:true,confirmButtonText:"🟠 হ্যাঁ",cancelButtonText:"🔵 না"}).then(r=>{if(!r.isConfirmed)PR_goTab("prHome");});}
 
 /* =========================================================
    COPY REFERRAL
@@ -3326,48 +3346,37 @@ async function(){
         Balance deduct
         */
 
-        await userRef.update({
-            balance:firebase.firestore.FieldValue.increment(-amount),
-            totalWithdrawn:firebase.firestore.FieldValue.increment(amount)
-        });
-
-
-        /*
-        Withdrawal record
-        */
-
-        await PR_db
-        .collection("withdrawals")
-        .add({
-
-            userId:
-            String(
-                PR_currentUser.id
-            ),
-
-            userName:
-            PR_currentUser.name,
-
-            telegramUsername:
-            withdrawUsername.replace(/^@/,""),
-
-            method:
-            PR_selectedMethod,
-
-            wallet:
-            wallet,
-
-            amount:
-            amount,
-
-            status:
-            "pending",
-
-            createdAt:
-            firebase.firestore
-            .FieldValue
-            .serverTimestamp()
-
+        const withdrawalId="WD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+        const withdrawalRef=PR_db.collection("withdrawals").doc(withdrawalId);
+        const balanceTxRef=PR_db.collection("earningTransactions").doc(withdrawalId);
+        let beforeBalance=0;
+        await PR_db.runTransaction(async(transaction)=>{
+            const snap=await transaction.get(userRef);
+            if(!snap.exists) throw new Error("USER_NOT_FOUND");
+            const d=snap.data()||{};
+            beforeBalance=Number(d.balance||0);
+            if(beforeBalance<amount) throw new Error("INSUFFICIENT_BALANCE");
+            transaction.update(userRef,{
+                balance:beforeBalance-amount,
+                totalWithdrawn:Number(d.totalWithdrawn||0)+amount
+            });
+            transaction.set(withdrawalRef,{
+                withdrawalId,
+                userId:String(PR_currentUser.id),
+                userName:PR_currentUser.name,
+                telegramUsername:withdrawUsername.replace(/^@/,""),
+                method:PR_selectedMethod,
+                wallet,
+                amount,
+                status:"pending",
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            });
+            transaction.set(balanceTxRef,{
+                transactionId:withdrawalId,type:"withdrawal_debit",userId:String(PR_currentUser.id),
+                amount,beforeBalance,afterBalance:beforeBalance-amount,status:"pending",
+                source:"withdrawal_request",reference:withdrawalId,
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            });
         });
 
 
@@ -3477,24 +3486,23 @@ window.PR_transferBalance = async function(){
         const senderRef = PR_db.collection("users").doc(String(PR_currentUser.id));
         const receiverRef = targetDoc.ref;
 
+        const transferId="TR-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+        const transferRef=PR_db.collection("balanceTransfers").doc(transferId);
         await PR_db.runTransaction(async(transaction) => {
             const senderSnap = await transaction.get(senderRef);
             const receiverSnap = await transaction.get(receiverRef);
-
-            if(!senderSnap.exists || !receiverSnap.exists){
-                throw new Error("USER_NOT_FOUND");
-            }
-
+            if(!senderSnap.exists || !receiverSnap.exists) throw new Error("USER_NOT_FOUND");
             const senderBalance = Number(senderSnap.data().balance || 0);
-            if(senderBalance < amount){
-                throw new Error("INSUFFICIENT_BALANCE");
-            }
-
-            transaction.update(senderRef, {
-                balance: firebase.firestore.FieldValue.increment(-amount)
-            });
-            transaction.update(receiverRef, {
-                balance: firebase.firestore.FieldValue.increment(amount)
+            const receiverBalance = Number(receiverSnap.data().balance || 0);
+            if(senderBalance < amount) throw new Error("INSUFFICIENT_BALANCE");
+            transaction.update(senderRef,{balance:senderBalance-amount});
+            transaction.update(receiverRef,{balance:receiverBalance+amount});
+            transaction.set(transferRef,{
+                transactionId:transferId,type:"balance_transfer",senderId:String(PR_currentUser.id),
+                receiverId:String(targetDoc.id),amount,beforeSenderBalance:senderBalance,
+                afterSenderBalance:senderBalance-amount,beforeReceiverBalance:receiverBalance,
+                afterReceiverBalance:receiverBalance+amount,status:"completed",
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
             });
         });
 
@@ -3503,7 +3511,8 @@ window.PR_transferBalance = async function(){
         usernameInput.value = "";
         amountInput.value = "";
         await PR_addActivity(PR_currentUser.username || PR_currentUser.name, "ব্যালেন্স ট্রান্সফার করেছেন", amount);
-        await PR_addNotification(targetDoc.id, "Balance Received", `${PR_currentUser.name || "একজন user"} আপনাকে ৳${amount.toFixed(2)} balance পাঠিয়েছেন।`);
+        await PR_addNotification(PR_currentUser.id, "🎉 Balance Transfer Successful", `আপনি @${username}-কে ৳${amount.toFixed(2)} পাঠিয়েছেন।`);
+        await PR_addNotification(targetDoc.id, "💰 Balance Received", `${PR_currentUser.name || "একজন user"} আপনাকে ৳${amount.toFixed(2)} balance পাঠিয়েছেন।`);
 
         Swal.fire({
             title:"Transfer Successful!",
