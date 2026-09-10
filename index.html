@@ -1752,7 +1752,7 @@ try{
    ========================================================= */
 
 const oldRefBonus = document.getElementById("prRefBonus");
-if(oldRefBonus){ oldRefBonus.innerText = "আপনার সরাসরি Referral-এর জন্য প্রতিটি নতুন user-এ ৳20 কমিশন পাবেন।"; }
+if(oldRefBonus){ oldRefBonus.innerText = "নতুন Direct Referral-এর জন্য ৳10 registration bonus পাবেন। L1 5% • L2 2% • L3 1% commission।"; }
 PR_renderBanners();
 
 
@@ -1796,6 +1796,23 @@ function PR_initTelegram(){
 
 }
 
+
+/* =========================================================
+   THEME SYSTEM
+   ========================================================= */
+function PR_applyTheme(theme){
+    const allowed={royal:1,ocean:1,emerald:1,sunset:1};
+    const t=allowed[theme]?theme:"royal";
+    const app=document.getElementById("premiumRewardsApp");
+    if(app){app.classList.remove("pr-theme-royal","pr-theme-ocean","pr-theme-emerald","pr-theme-sunset");app.classList.add("pr-theme-"+t);}
+    document.querySelectorAll(".pr-theme-option[data-theme]").forEach(b=>b.classList.toggle("active",b.dataset.theme===t));
+    try{localStorage.setItem("pr_theme",t);}catch(e){}
+    return t;
+}
+window.PR_applyTheme=PR_applyTheme;
+window.PR_openThemeModal=function(){PR_applyTheme((()=>{try{return localStorage.getItem("pr_theme")||"royal"}catch(e){return "royal"}})());const m=document.getElementById("prThemeModal");if(m)m.classList.add("active");};
+window.PR_closeThemeModal=function(){const m=document.getElementById("prThemeModal");if(m)m.classList.remove("active");};
+window.PR_setTheme=function(theme){PR_applyTheme(theme);PR_closeThemeModal();};
 
 /* =========================================================
    USER INITIALIZE
@@ -1999,129 +2016,35 @@ async function PR_loadUser(){
     if(!PR_db || !PR_currentUser.id){ PR_updateUI(); return; }
     try{
         const users=PR_db.collection("users");
-        const telegramId=String(PR_currentUser.telegramId || PR_currentUser.id || "");
+        const telegramId=String(PR_currentUser.telegramId || PR_currentUser.id || "").trim();
         const username=String(PR_currentUser.username || "").replace(/^@/,"").trim().toLowerCase();
-
-        // IMPORTANT: never create a new zero-balance document just because the
-        // current Telegram ID does not match the legacy Firestore document ID.
-        let ref=users.doc(telegramId);
-        let doc=await ref.get();
-
-        if(username){
-            const q=await users.where("username","==",username).limit(10).get();
-            if(!q.empty){
-                const candidates=q.docs.filter(d=>String(d.id)!==String(telegramId));
-                // If a duplicate/placeholder doc was created by an older build,
-                // prefer the existing populated record. Never overwrite it.
-                if(!doc.exists){
-                    doc=q.docs[0]; ref=doc.ref;
-                }else if(candidates.length){
-                    const cur=doc.data()||{};
-                    const curScore=Number(cur.balance||0)+Number(cur.totalIncome||0)+Number(cur.totalRef||0)+Number(cur.adsWatched||0);
-                    const best=candidates.slice().sort((a,b)=>{
-                        const A=a.data()||{},B=b.data()||{};
-                        const sa=Number(A.balance||0)+Number(A.totalIncome||0)+Number(A.totalRef||0)+Number(A.adsWatched||0);
-                        const sb=Number(B.balance||0)+Number(B.totalIncome||0)+Number(B.totalRef||0)+Number(B.adsWatched||0);
-                        return sb-sa;
-                    })[0];
-                    const bestScore=best ? (Number(best.data()?.balance||0)+Number(best.data()?.totalIncome||0)+Number(best.data()?.totalRef||0)+Number(best.data()?.adsWatched||0)) : 0;
-                    if(best && bestScore>curScore){ doc=best; ref=best.ref; }
-                }
-            }
+        const candidates=[],seen=new Set();
+        const add=async d=>{if(d&&d.exists&&!seen.has(d.id)){seen.add(d.id);candidates.push(d);}};
+        await add(await users.doc(telegramId).get());
+        if(telegramId){const q=await users.where("telegramId","==",telegramId).limit(20).get();q.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);candidates.push(d);}});}
+        if(username){const q=await users.where("username","==",username).limit(20).get();q.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);candidates.push(d);}});}
+        const score=d=>{const x=d.data()||{};return Number(x.balance||0)+Number(x.totalIncome||0)+Number(x.totalRef||0)*2+Number(x.directRefCount||0)*2+Number(x.adsWatched||0)+Number(x.completedTasks?.length||0)+Number(x.totalWithdrawn||0)+(x.referrerId?5:0)+(x.createdAt?1:0);};
+        let doc=candidates.sort((a,b)=>score(b)-score(a))[0]||null;
+        let ref=doc?doc.ref:users.doc(telegramId);
+        if(!doc){
+            const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
+            let resolvedReferrerId="",resolvedReferrerName="";
+            if(start&&start!==telegramId.toLowerCase()&&start!==username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){resolvedReferrerId=String(r.id);resolvedReferrerName=r.data()?.name||"User";}}catch(e){}}
+            const u={id:telegramId,telegramId,name:PR_currentUser.name,username,photoUrl:PR_currentUser.photoUrl||"",balance:0,totalRef:0,directRefCount:0,referralBonusTotal:0,referrerId:resolvedReferrerId,referrerName:resolvedReferrerName,totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,taskBonusTotal:0,joinDate:new Date().toISOString(),completedTasks:[],accountActivated:false,activeDirectReferrals:0,level1Commission:0,level2Commission:0,level3Commission:0,videoCountSincePopup:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+            ref=users.doc(telegramId);await ref.set(u);doc=await ref.get();
+            if(resolvedReferrerId){await PR_applyReferralCommission(resolvedReferrerId,telegramId);await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");}
         }
-
-        if(!doc.exists){
-            const tgStartParam=PR_tg?.initDataUnsafe?.start_param || "";
-            const normalizedStartParam=String(tgStartParam).replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
-            let resolvedReferrerId="", resolvedReferrerName="";
-            if(normalizedStartParam && normalizedStartParam!==telegramId.toLowerCase() && normalizedStartParam!==username){
-                try{
-                    let r=await users.doc(normalizedStartParam).get();
-                    if(!r.exists){ const q=await users.where("username","==",normalizedStartParam).limit(1).get(); if(!q.empty) r=q.docs[0]; }
-                    if(r?.exists){ resolvedReferrerId=String(r.id); resolvedReferrerName=r.data()?.name||"User"; }
-                }catch(e){ console.error("Referral resolve:",e); }
-            }
-            const newUser={
-                id:telegramId, telegramId, name:PR_currentUser.name, username:username,
-                photoUrl:PR_currentUser.photoUrl||"", balance:0, totalRef:0, directRefCount:0,
-                referralBonusTotal:0, referrerId:resolvedReferrerId, referrerName:resolvedReferrerName,
-                totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,taskBonusTotal:0,
-                joinDate:new Date().toISOString(),completedTasks:[],accountActivated:false,
-                activeDirectReferrals:0,level1Commission:0,level2Commission:0,level3Commission:0,
-                createdAt:firebase.firestore.FieldValue.serverTimestamp()
-            };
-            ref=users.doc(telegramId);
-            await ref.set(newUser);
-            PR_currentUser={...PR_currentUser,...newUser};
-            if(resolvedReferrerId){
-                await PR_applyReferralCommission(resolvedReferrerId,telegramId);
-                await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");
-            }
-        }else{
-            const data=doc.data()||{};
-            // Keep the REAL existing Firestore record. No reset-to-zero migration.
-            PR_currentUser.telegramId=String(data.telegramId || telegramId);
-            PR_currentUser.id=String(doc.id);
-            PR_currentUser.name=data.name || PR_currentUser.name || "User";
-            PR_currentUser.username=String(data.username || username || "").replace(/^@/,"").toLowerCase();
-            PR_currentUser.balance=Number(data.balance ?? 0);
-            PR_currentUser.totalRef=Number(data.totalRef ?? 0);
-            PR_currentUser.directRefCount=Number(data.directRefCount ?? data.totalRef ?? 0);
-            PR_currentUser.referralBonusTotal=Number(data.referralBonusTotal ?? 0);
-            PR_currentUser.referrerId=String(data.referrerId || "");
-            PR_currentUser.referrerName=data.referrerName || "";
-            PR_currentUser.totalIncome=Number(data.totalIncome ?? 0);
-            PR_currentUser.todayIncome=Number(data.todayIncome ?? 0);
-            PR_currentUser.incomeDay=data.incomeDay || "";
-            PR_currentUser.adsWatched=Number(data.adsWatched ?? 0);
-            PR_currentUser.totalWithdrawn=Number(data.totalWithdrawn ?? 0);
-            PR_currentUser.taskBonusTotal=Number(data.taskBonusTotal ?? 0);
-            PR_currentUser.joinDate=data.joinDate || data.createdAt || "";
-            PR_currentUser.completedTasks=Array.isArray(data.completedTasks)?data.completedTasks:[];
-            PR_currentUser.accountActivated=!!data.accountActivated;
-            PR_currentUser.activeDirectReferrals=Number(data.activeDirectReferrals ?? 0);
-            PR_currentUser.level1Commission=Number(data.level1Commission ?? 0);
-            PR_currentUser.level2Commission=Number(data.level2Commission ?? 0);
-            PR_currentUser.level3Commission=Number(data.level3Commission ?? 0);
-            PR_currentUser.videoCountSincePopup=Number(data.videoCountSincePopup ?? 0);
-
-            const tgStartParam=PR_tg?.initDataUnsafe?.start_param || "";
-            const start=String(tgStartParam).replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
-            if(!PR_currentUser.referrerId && start && start!==String(PR_currentUser.id).toLowerCase() && start!==PR_currentUser.username){
-                try{
-                    let r=await users.doc(start).get();
-                    if(!r.exists){ const q=await users.where("username","==",start).limit(1).get(); if(!q.empty) r=q.docs[0]; }
-                    if(r?.exists){
-                        PR_currentUser.referrerId=String(r.id); PR_currentUser.referrerName=r.data()?.name||"User";
-                        await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});
-                        await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);
-                    }
-                }catch(e){ console.error("Existing user referral attach:",e); }
-            }
-            if(PR_currentUser.username && !data.username) ref.update({username:PR_currentUser.username}).catch(()=>{});
-            if(!data.telegramId) ref.update({telegramId:PR_currentUser.telegramId}).catch(()=>{});
-            const livePhoto=String(PR_tg?.initDataUnsafe?.user?.photo_url || "").trim();
-            if(livePhoto && livePhoto!==String(data.photoUrl||"")) ref.update({photoUrl:livePhoto}).catch(()=>{});
-            PR_currentUser.photoUrl=livePhoto || data.photoUrl || PR_currentUser.photoUrl || "";
-        }
-        PR_userDocRef=ref;
+        const data=doc.data()||{}; PR_userDocRef=ref;
+        PR_currentUser={...PR_currentUser,...{telegramId:String(data.telegramId||telegramId),id:String(doc.id),name:data.name||PR_currentUser.name||"User",username:String(data.username||username||"").replace(/^@/,"").toLowerCase(),balance:Number(data.balance??0),totalRef:Number(data.totalRef??0),directRefCount:Number(data.directRefCount??0),referralBonusTotal:Number(data.referralBonusTotal??0),referrerId:String(data.referrerId||""),referrerName:data.referrerName||"",totalIncome:Number(data.totalIncome??0),todayIncome:Number(data.todayIncome??0),incomeDay:data.incomeDay||"",adsWatched:Number(data.adsWatched??0),totalWithdrawn:Number(data.totalWithdrawn??0),taskBonusTotal:Number(data.taskBonusTotal??0),joinDate:data.joinDate||data.createdAt||"",completedTasks:Array.isArray(data.completedTasks)?data.completedTasks:[],accountActivated:!!data.accountActivated,activeDirectReferrals:Number(data.activeDirectReferrals??0),level1Commission:Number(data.level1Commission??0),level2Commission:Number(data.level2Commission??0),level3Commission:Number(data.level3Commission??0),videoCountSincePopup:Number(data.videoCountSincePopup??0)}};
+        const ident={};if(!data.telegramId&&telegramId)ident.telegramId=telegramId;if(!data.username&&username)ident.username=username;if(Object.keys(ident).length)ref.update(ident).catch(()=>{});
+        const live=String(PR_tg?.initDataUnsafe?.user?.photo_url||"").trim();if(live&&live!==String(data.photoUrl||""))ref.update({photoUrl:live}).catch(()=>{});PR_currentUser.photoUrl=live||data.photoUrl||PR_currentUser.photoUrl||"";
+        // Never attach a new referral to a user who already has one.
+        const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
+        if(!PR_currentUser.referrerId&&start&&start!==String(PR_currentUser.id).toLowerCase()&&start!==PR_currentUser.username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){PR_currentUser.referrerId=String(r.id);PR_currentUser.referrerName=r.data()?.name||"User";await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);}}catch(e){}}
         PR_createReferralLink();
-    }catch(error){
-        console.error("Load User:",error);
-        const box=document.getElementById("prFirebaseStatus");
-        if(box) box.innerText="Firebase error: "+(error.message||error);
-    }
-    PR_updateUI();
-    PR_setupAdminUI(); PR_renderTasks(); PR_loadNotifications(); PR_startNotificationListener();
-    PR_loadLiveActivities(); PR_startActivityListener(); PR_loadReferrerName(); PR_loadDirectReferrals();
-    PR_checkActivation(); PR_showReferralLevel(1); PR_loadAdminBanners(); PR_loadApprovedTasks();
-    if(PR_isAdmin()) PR_loadPendingAdminTasks();
-    if(PR_isAdmin()) PR_loadAdminBalanceHistory();
-    if(PR_isAdmin()) PR_loadAdminWithdrawals();
-    PR_renderBadges();
-    PR_loadFinancialHistory();
+    }catch(error){console.error("Load User:",error);const box=document.getElementById("prFirebaseStatus");if(box)box.innerText="Firebase error: "+(error.message||error);}
+    PR_updateUI();PR_setupAdminUI();PR_renderTasks();PR_loadNotifications();PR_startNotificationListener();PR_loadLiveActivities();PR_startActivityListener();PR_loadReferrerName();PR_loadDirectReferrals();PR_checkActivation();PR_showReferralLevel(1);PR_loadAdminBanners();PR_loadApprovedTasks();if(PR_isAdmin())PR_loadPendingAdminTasks();if(PR_isAdmin())PR_loadAdminBalanceHistory();if(PR_isAdmin())PR_loadAdminWithdrawals();PR_renderBadges();PR_loadFinancialHistory();
 }
-
 
 function PR_getCurrentUserRef(){
     if(PR_userDocRef) return PR_userDocRef;
@@ -2524,82 +2447,10 @@ function PR_copyReferralCode(){
 }
 
 async function PR_loadDirectReferrals(){
-    const list=document.getElementById("prDirectReferralList");
-    if(!list) return;
-
-    if(!PR_db || !PR_currentUser.id){
-        list.innerHTML='<div class="pr-direct-empty">Firebase unavailable</div>';
-        return;
-    }
-
-    list.innerHTML='<div class="pr-direct-empty">Referral list লোড হচ্ছে...</div>';
-
-    try{
-        const snap=await PR_db.collection("users")
-            .where("referrerId","==",String(PR_currentUser.id))
-            .get();
-
-        const users=[];
-        snap.forEach(d=>{
-            users.push({id:d.id,...(d.data()||{})});
-        });
-
-        users.sort((a,b)=>{
-            const aTime=a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.joinDate||0).getTime();
-            const bTime=b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.joinDate||0).getTime();
-            return (bTime||0)-(aTime||0);
-        });
-
-        const count=users.length;
-        PR_currentUser.directRefCount=count;
-
-        const countEl=document.getElementById("prReferralCount");
-        if(countEl) countEl.innerText=count;
-
-        const earnedEl=document.getElementById("prReferralEarned");
-        if(earnedEl) earnedEl.innerText=(Number(PR_currentUser.level1Commission||0)+Number(PR_currentUser.level2Commission||0)+Number(PR_currentUser.level3Commission||0)+Number(PR_currentUser.referralBonusTotal||0)).toFixed(2);
-
-        const historyEl=document.getElementById("prHistoryRefs");
-        if(historyEl) historyEl.innerText=count;
-
-        // Keep the in-memory direct count aligned with the new referral system.
-        PR_currentUser.totalRef=count;
-
-        if(!users.length){
-            list.innerHTML='<div class="pr-direct-empty"><i class="fas fa-user-plus" style="font-size:24px;margin-bottom:8px"></i><br>এখনও কোনো Direct Referral নেই।<br><small>আপনার Referral Link শেয়ার করুন।</small></div>';
-            return;
-        }
-
-        list.innerHTML=users.map((u,index)=>{
-            const name=u.name||u.username||"User";
-            const uname=u.username ? "@"+u.username : "Telegram ID: "+u.id;
-            const initials=String(name).trim().slice(0,2).toUpperCase() || "U";
-            const photo=String(u.photoUrl||"").trim();
-            const avatar=photo
-                ? `<img class="pr-direct-avatar" src="${PR_escapeHtml(photo)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="pr-direct-avatar" style="display:none;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div>`
-                : `<div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div>`;
-            const joined=PR_formatDate(u.joinDate||u.createdAt);
-            return `<div class="pr-direct-user">
-                <div class="pr-direct-rank">${index+1}</div>
-                ${avatar}
-                <div class="pr-direct-info">
-                    <div class="pr-direct-name">${PR_escapeHtml(name)}</div>
-                    <div class="pr-direct-username">${PR_escapeHtml(uname)}</div>
-                    <div class="pr-direct-joined">Joined: ${PR_escapeHtml(joined)}</div>
-                </div>
-                <div class="pr-direct-earning">+৳${Number(PR_SETTINGS.referralCommission||20).toFixed(0)}</div>
-            </div>`;
-        }).join("");
-
-        PR_updateUI();
-    }catch(e){
-        console.error("Direct referral list:",e);
-        list.innerHTML='<div class="pr-direct-empty">Referral list load করা যায়নি।</div>';
-    }
-}
-
-async function PR_getReferralLevels(){const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"");if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let f=[String(PR_currentUser.id)];for(let i=0;i<3;i++){const n=[];f.forEach(id=>(byRef.get(id)||[]).forEach(u=>{if(!seen.has(u.id)){seen.add(u.id);levels[i].push(u);n.push(u.id);}}));f=n;}return levels;}
-window.PR_showReferralLevel=async function(level){try{const levels=await PR_getReferralLevels(),users=levels[level-1]||[],pct={1:5,2:2,3:1}[level],box=document.getElementById("prReferralLevelList"),sum=document.getElementById("prReferralLevelSummary");document.querySelectorAll(".pr-ref-level-tab").forEach(b=>b.classList.toggle("pr-selected",Number(b.dataset.level)===level));if(sum)sum.innerHTML=`<b>LEVEL ${level}</b> • ${pct}% • মোট সদস্য <b>${users.length}</b>`;if(box)box.innerHTML=users.length?users.map(u=>`<div class="pr-direct-user"><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(u.name||u.username||"User")}</div><div class="pr-direct-username">${u.username?"@"+PR_escapeHtml(u.username):"Telegram ID: "+PR_escapeHtml(u.id)}</div><div class="pr-direct-joined">${Number(u.totalRef||0)>=4?"🟢 Active":"⚪ Inactive"} • Referral: ${Number(u.totalRef||0)}</div></div><div class="pr-direct-earning">${pct}%</div></div>`).join(""):"<div class='pr-direct-empty'>এই level-এ কোনো member নেই।</div>";}catch(e){console.error(e);}};
+    const list=document.getElementById("prDirectReferralList");if(!list||!PR_db||!PR_currentUser.id)return;
+    try{const levels=await PR_getReferralLevels(),direct=levels[0]||[];PR_currentUser.directRefCount=direct.length;PR_currentUser.totalRef=levels.reduce((n,a)=>n+a.length,0);const rr=PR_getCurrentUserRef();if(rr)rr.update({directRefCount:direct.length,totalRef:PR_currentUser.totalRef}).catch(()=>{});if(!direct.length){list.innerHTML='<div class="pr-direct-empty">এখনও কোনো direct referral নেই।</div>';return;}list.innerHTML=direct.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L1 5%</div></div>`}).join("");PR_updateUI();}catch(e){console.error("Direct referral list:",e);list.innerHTML='<div class="pr-direct-empty">Referral data load করা যায়নি।</div>';}}
+async function PR_getReferralLevels(){
+    if(!PR_db||!PR_currentUser.id)return[[],[],[]];const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"").trim();if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let frontier=[String(PR_currentUser.id),String(PR_currentUser.telegramId||"")];if(PR_currentUser.username)frontier.push("u:"+String(PR_currentUser.username).replace(/^@/,"").toLowerCase());for(let i=0;i<3;i++){const next=[];for(const key of frontier){for(const u of(byRef.get(key)||[])){if(seen.has(u.id))continue;seen.add(u.id);levels[i].push(u);next.push(u.id);if(u.telegramId)next.push(String(u.telegramId));if(u.username)next.push("u:"+String(u.username).replace(/^@/,"").toLowerCase());}}frontier=[...new Set(next)];}return levels;}
 async function PR_checkActivation(){
     if(!PR_db||!PR_currentUser.id)return false;
     try{
@@ -2607,7 +2458,7 @@ async function PR_checkActivation(){
         const active=l1.filter(u=>Number(u.directRefCount ?? u.totalRef ?? 0)>=4).length;
         const total=levels.flat().length;
         const wasActive=!!PR_currentUser.accountActivated;
-        const ok=total>=Number(PR_SETTINGS.activation.minSuccessfulReferrals||5)&&active>=Number(PR_SETTINGS.activation.minActiveDirectReferrals||3);
+        const ok=l1.length>=Number(PR_SETTINGS.activation.minSuccessfulReferrals||5)&&active>=Number(PR_SETTINGS.activation.minActiveDirectReferrals||3);
         PR_currentUser.accountActivated=ok; PR_currentUser.activeDirectReferrals=active; PR_currentUser.totalRef=total; PR_currentUser.directRefCount=l1.length;
         await PR_getCurrentUserRef()?.update({accountActivated:ok,activeDirectReferrals:active,totalRef:total,directRefCount:l1.length});
         const el=document.getElementById("prActivationStatus"); if(el)el.innerHTML=ok?"🟢 <b>Activated</b>":`🟠 Not Activated — Total Referral ${total}/5, Active Direct ${active}/3`;
@@ -2665,193 +2516,26 @@ function PR_renderTasks(){
    JOIN TASK
    ========================================================= */
 
-window.PR_joinTask =
-async function(
-    taskId,
-    link,
-    taskRewardArg,
-    isPaid
-){
-    const taskReward=Number(taskRewardArg || PR_SETTINGS.joinReward || 0);
-
-    if(
-        (
-            PR_currentUser
-            .completedTasks || []
-        ).includes(taskId)
-    ){
-
-        return;
-
-    }
-
-
-    window.open(
-        link,
-        "_blank"
-    );
-
-
-    const result =
-    await Swal.fire({
-
-        title:
-        "Task Complete?",
-
-        text:
-        "Channel/Group-এ Join করার পর Confirm করুন।",
-
-        icon:
-        "question",
-
-        showCancelButton:
-        true,
-
-        confirmButtonText:
-        "Confirm",
-
-        cancelButtonText:
-        "Cancel"
-
-    });
-
-
-    if(
-        !result.isConfirmed
-    ){
-
-        return;
-
-    }
-
-
-    if(!PR_db){
-
-        Swal.fire(
-            "Firebase Error",
-            "Firebase configure করা হয়নি।",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    try{
-
-        const userRef =
-        PR_db
-        .collection("users")
-        .doc(
-            String(
-                PR_currentUser.id
-            )
-        );
-
-
-        await userRef.update({
-            balance: firebase.firestore.FieldValue.increment(taskReward),
-            totalIncome: firebase.firestore.FieldValue.increment(taskReward),
-            todayIncome: firebase.firestore.FieldValue.increment(taskReward),
-            incomeDay: new Date().toISOString().slice(0,10),
-            completedTasks: firebase.firestore.FieldValue.arrayUnion(taskId)
-        });
-
-        if(isPaid && PR_db){
-            const taskRef=PR_db.collection("tasks").doc(String(taskId));
-            try{ await taskRef.update({completedCount:firebase.firestore.FieldValue.increment(1)}); }catch(e){}
-        }
-        const directReferrerId = PR_currentUser.referrerId || "";
-        if(directReferrerId){
-            // ৫% bonus is ONLY for the direct (1st-level) referrer.
-            await PR_applyTaskBonus(directReferrerId, taskReward, PR_currentUser.name || PR_currentUser.username || "বন্ধু");
-        }
-        await PR_addActivity(PR_currentUser.username || PR_currentUser.name, "টাস্ক করেছেন", taskReward);
-
-
-        PR_currentUser.balance += taskReward;
-        PR_currentUser.totalIncome = Number(PR_currentUser.totalIncome||0) + taskReward;
-        PR_currentUser.todayIncome = Number(PR_currentUser.todayIncome||0) + taskReward;
-
-
-        if(
-            !Array.isArray(
-                PR_currentUser.completedTasks
-            )
-        ){
-
-            PR_currentUser.completedTasks=[];
-
-        }
-
-
-        PR_currentUser
-        .completedTasks
-        .push(
-            taskId
-        );
-
-
-        PR_updateUI();
-
-        PR_renderTasks();
-
-
-        Swal.fire({
-
-            title:
-            "সফল!",
-
-            text:
-            "৳" +
-            PR_SETTINGS.joinReward +
-            " reward যোগ হয়েছে।",
-
-            icon:
-            "success"
-
-        });
-
-
-    }catch(error){
-
-        console.error(error);
-
-        Swal.fire(
-            "Error",
-            "Task update করা যায়নি।",
-            "error"
-        );
-
-    }
-
-};
-
+window.PR_joinTask=async function(taskId,link,taskRewardArg,isPaid){
+    const taskReward=Number(taskRewardArg||PR_SETTINGS.joinReward||0);
+    if((PR_currentUser.completedTasks||[]).map(String).includes(String(taskId)))return Swal.fire("Already Completed","এই task আপনি আগে complete করেছেন।","info");
+    window.open(link,"_blank");const result=await Swal.fire({title:"Task Complete?",text:"Task সম্পন্ন হলে reward আপনার balance-এ যোগ হবে।",icon:"question",showCancelButton:true,confirmButtonText:"Confirm",cancelButtonText:"Cancel"});if(!result.isConfirmed)return;if(!PR_db)return Swal.fire("Firebase Error","Firebase configure করা হয়নি।","error");
+    try{const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const txId="TASK-"+String(taskId)+"-"+String(PR_currentUser.id);let applied=false,before=0,after=0;await PR_db.runTransaction(async tx=>{const snap=await tx.get(userRef);if(!snap.exists)throw new Error("USER_NOT_FOUND");const et=await tx.get(PR_db.collection("earningTransactions").doc(txId));if(et.exists)return;const d=snap.data()||{},done=Array.isArray(d.completedTasks)?d.completedTasks:[];if(done.map(String).includes(String(taskId)))return;before=Number(d.balance||0);after=Number((before+taskReward).toFixed(2));const day=new Date().toISOString().slice(0,10);tx.update(userRef,{balance:after,totalIncome:Number(d.totalIncome||0)+taskReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward,incomeDay:day,completedTasks:firebase.firestore.FieldValue.arrayUnion(String(taskId))});tx.set(PR_db.collection("earningTransactions").doc(txId),{transactionId:txId,type:"task_reward",source:"task",userId:String(PR_currentUser.id),amount:taskReward,beforeBalance:before,afterBalance:after,status:"completed",reference:String(taskId),createdAt:firebase.firestore.FieldValue.serverTimestamp()});applied=true;});if(!applied)return Swal.fire("Already Completed","এই task reward আগেই দেওয়া হয়েছে।","info");if(isPaid)PR_db.collection("tasks").doc(String(taskId)).update({completedCount:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+taskReward;PR_currentUser.todayIncome=String(PR_currentUser.incomeDay||"")===new Date().toISOString().slice(0,10)?Number(PR_currentUser.todayIncome||0)+taskReward:taskReward;PR_currentUser.incomeDay=new Date().toISOString().slice(0,10);if(!Array.isArray(PR_currentUser.completedTasks))PR_currentUser.completedTasks=[];PR_currentUser.completedTasks.push(String(taskId));if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,taskReward,PR_currentUser.name||PR_currentUser.username||"User",txId,"task");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"টাস্ক করেছেন",taskReward);PR_updateUI();PR_renderTasks();Swal.fire({title:"সফল!",text:"৳"+taskReward.toFixed(2)+" reward আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});}catch(e){console.error("Task complete",e);Swal.fire("Error","Task reward যোগ করা যায়নি। Firebase permission/network check করুন।","error");}};
 
 /* =========================================================
    5% TASK BONUS TO DIRECT REFERRER
    ========================================================= */
-async function PR_applyTaskBonus(referrerId, taskReward, referredName){
-    if(!PR_db||!referrerId||!taskReward)return;
-    let current=String(referrerId), seen=new Set(), level=1; const rates=[.05,.02,.01];
-    while(current&&level<=3&&!seen.has(current)){
-        seen.add(current); const ref=PR_db.collection("users").doc(current); let data=null,bonus=0;
-        try{await PR_db.runTransaction(async tx=>{const snap=await tx.get(ref);if(!snap.exists)return;data=snap.data()||{};bonus=Number((Number(taskReward)*rates[level-1]).toFixed(2));if(bonus>0)tx.update(ref,{balance:firebase.firestore.FieldValue.increment(bonus),totalIncome:firebase.firestore.FieldValue.increment(bonus),todayIncome:firebase.firestore.FieldValue.increment(bonus),incomeDay:new Date().toISOString().slice(0,10),["level"+level+"Commission"]:firebase.firestore.FieldValue.increment(bonus)});});}catch(e){console.error(e);break;}
-        if(data&&bonus>0){await PR_addNotification(current,`Level ${level} Commission`,`Level ${level} (${rates[level-1]*100}%) কমিশন হিসেবে ৳${bonus.toFixed(2)} পেয়েছেন।`);await PR_addActivity(data.username||data.name,`Level ${level} commission পেয়েছেন`,bonus);}
-        current=String(data?.referrerId||""); level++;
-    }
+async function PR_applyTaskBonus(referrerId,taskReward,referredName,earningId="",sourceType="earning"){
+    if(!PR_db||!referrerId||!taskReward)return;let current=String(referrerId),seen=new Set(),level=1;const rates=[.05,.02,.01];
+    while(current&&level<=3&&!seen.has(current)){seen.add(current);const ref=PR_db.collection("users").doc(current),commissionId=earningId?`${String(earningId)}-L${level}`:`LEGACY-${Date.now()}-${current}-L${level}`,cr=PR_db.collection("commissionTransactions").doc(commissionId);let data=null,bonus=0,applied=false;try{await PR_db.runTransaction(async tx=>{const snap=await tx.get(ref);if(!snap.exists)return;data=snap.data()||{};const old=await tx.get(cr);if(old.exists)return;bonus=Number((Number(taskReward)*rates[level-1]).toFixed(2));if(bonus<=0)return;const before=Number(data.balance||0),after=Number((before+bonus).toFixed(2)),day=new Date().toISOString().slice(0,10);tx.update(ref,{balance:after,totalIncome:Number(data.totalIncome||0)+bonus,todayIncome:String(data.incomeDay||"")===day?Number(data.todayIncome||0)+bonus:bonus,incomeDay:day,["level"+level+"Commission"]:firebase.firestore.FieldValue.increment(bonus),taskBonusTotal:firebase.firestore.FieldValue.increment(bonus)});tx.set(cr,{transactionId:commissionId,type:`level_${level}_commission`,source:sourceType,userId:current,amount:bonus,beforeBalance:before,afterBalance:after,status:"completed",reference:String(earningId||referredName||"earning"),earningUserId:String(PR_currentUser.id),level,rate:rates[level-1],createdAt:firebase.firestore.FieldValue.serverTimestamp()});applied=true;});}catch(e){console.error("Commission level "+level,e);break;}if(data&&applied&&bonus>0){await PR_addNotification(current,`Level ${level} Commission`,`Level ${level} (${rates[level-1]*100}%) কমিশন হিসেবে ৳${bonus.toFixed(2)} পেয়েছেন।`);await PR_addActivity(data.username||data.name,`Level ${level} commission পেয়েছেন`,bonus);}current=String(data?.referrerId||"");level++;}
 }
 
 /* =========================================================
    DIRECT REFERRAL COMMISSION
    ========================================================= */
 
-async function PR_applyReferralCommission(referrerId){
-    if(!PR_db||!referrerId)return;
-    const amount=Number(PR_SETTINGS.registrationBonus||10), refId=String(referrerId); if(amount<=0)return;
-    try{let data=null;await PR_db.runTransaction(async tx=>{const r=PR_db.collection("users").doc(refId),snap=await tx.get(r);if(!snap.exists)return;data=snap.data()||{};tx.update(r,{balance:firebase.firestore.FieldValue.increment(amount),totalIncome:firebase.firestore.FieldValue.increment(amount),todayIncome:firebase.firestore.FieldValue.increment(amount),referralBonusTotal:firebase.firestore.FieldValue.increment(amount),totalRef:firebase.firestore.FieldValue.increment(1),incomeDay:new Date().toISOString().slice(0,10)});});if(data){await PR_addNotification(refId,"🎉 Direct Referral Bonus",`নতুন Direct Referral-এর জন্য ৳${amount.toFixed(2)} registration bonus পেয়েছেন।`);await PR_addActivity(data.username||data.name,"Direct Referral Bonus পেয়েছেন",amount);}}catch(e){console.error("Referral bonus:",e);}
-}
+async function PR_applyReferralCommission(referrerId,referredUserId=""){
+    if(!PR_db||!referrerId)return;const amount=Number(PR_SETTINGS.registrationBonus||10),refId=String(referrerId);if(amount<=0)return;const key=String(referredUserId||("legacy-"+Date.now())).replace(/[^a-zA-Z0-9_-]/g,"_");const br=PR_db.collection("referralBonusTransactions").doc(key),rr=PR_db.collection("users").doc(refId);try{let data=null,applied=false;await PR_db.runTransaction(async tx=>{const snap=await tx.get(rr);if(!snap.exists)return;const old=await tx.get(br);if(old.exists)return;data=snap.data()||{};const before=Number(data.balance||0),after=Number((before+amount).toFixed(2)),day=new Date().toISOString().slice(0,10);tx.update(rr,{balance:after,totalIncome:Number(data.totalIncome||0)+amount,todayIncome:String(data.incomeDay||"")===day?Number(data.todayIncome||0)+amount:amount,incomeDay:day,referralBonusTotal:firebase.firestore.FieldValue.increment(amount),totalRef:firebase.firestore.FieldValue.increment(1),directRefCount:firebase.firestore.FieldValue.increment(1)});tx.set(br,{transactionId:key,type:"direct_referral_bonus",source:"registration",referrerId:refId,referredUserId:String(referredUserId||""),amount,beforeBalance:before,afterBalance:after,status:"completed",createdAt:firebase.firestore.FieldValue.serverTimestamp()});applied=true;});if(data&&applied){await PR_addNotification(refId,"🎉 Direct Referral Bonus",`নতুন Direct Referral-এর জন্য ৳${amount.toFixed(2)} registration bonus পেয়েছেন।`);await PR_addActivity(data.username||data.name,"Direct Referral Bonus পেয়েছেন",amount);}}catch(e){console.error("Referral bonus:",e);}}
 
 /* =========================================================
    ADMIN ACCESS + BROADCAST
@@ -3649,6 +3333,7 @@ async function PR_loadLeaderboard(){
    START
    ========================================================= */
 
+PR_applyTheme((()=>{try{return localStorage.getItem("pr_theme")||"royal"}catch(e){return "royal"}})());
 PR_renderTasks();
 PR_renderBanners();
 PR_initUser();
