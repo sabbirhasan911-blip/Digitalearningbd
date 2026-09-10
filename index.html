@@ -544,7 +544,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     margin-bottom:4px;
 }
 
-.pr-podium-avatar{
+.pr-leaderboard .pr-podium-avatar{display:none}.pr-podium-avatar{
     width:72px;
     height:72px;
     border-radius:50%;
@@ -555,7 +555,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     background:#fff;
 }
 
-.pr-podium-place.first .pr-podium-avatar{
+.pr-podium-place.first .pr-leaderboard .pr-podium-avatar{display:none}.pr-podium-avatar{
     width:92px;
     height:92px;
     border-color:#ffd54f;
@@ -640,8 +640,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 @media(max-width:480px){
     .pr-podium{gap:6px}
     .pr-podium-place{padding-left:5px;padding-right:5px}
-    .pr-podium-avatar{width:58px;height:58px}
-    .pr-podium-place.first .pr-podium-avatar{width:74px;height:74px}
+    .pr-leaderboard .pr-podium-avatar{display:none}.pr-podium-avatar{width:58px;height:58px}
+    .pr-podium-place.first .pr-leaderboard .pr-podium-avatar{display:none}.pr-podium-avatar{width:74px;height:74px}
     .pr-podium-name{font-size:12px}
 }
 
@@ -1371,6 +1371,16 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 
         <div class="pr-card">
+            <h3 style="margin-top:0">🏅 Badges</h3>
+            <div id="prBadges" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px"><span class="pr-theme-option">Loading...</span></div>
+        </div>
+
+        <div class="pr-card">
+            <h3 style="margin-top:0"><i class="fas fa-receipt"></i> Financial Transaction History</h3>
+            <div id="prFinancialHistory" style="margin-top:8px"><div class="pr-ref-empty">Loading...</div></div>
+        </div>
+
+        <div class="pr-card">
             <h3 style="margin-top:0"><i class="fas fa-clock-rotate-left"></i> History</h3>
             <div class="pr-history-row"><span>এডস দেখেছে</span><b id="prAdsWatched">0</b></div>
             <div class="pr-history-row"><span>টাস্ক করেছে</span><b id="prTasksDone">0</b></div>
@@ -1504,6 +1514,12 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <div id="prAdminBalanceStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
             <div style="margin-top:15px;font-weight:700">Balance Transaction History</div>
             <div id="prAdminBalanceHistory" style="margin-top:8px"><div class="pr-ref-empty">Loading...</div></div>
+        </div>
+
+        <div class="pr-card">
+            <div style="font-weight:700"><i class="fas fa-money-bill-transfer"></i> Withdrawal Manager</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Pending / Processing / Approve / Reject করুন। Reject করলে reserved balance ফেরত যাবে।</div>
+            <div id="prAdminWithdrawals"><div class="pr-ref-empty">Loading...</div></div>
         </div>
 
         <div class="pr-card">
@@ -1662,6 +1678,7 @@ const PR_SETTINGS = {
    ========================================================= */
 
 let PR_db = null;
+let PR_userDocRef = null;
 
 let PR_tg = null;
 
@@ -1810,6 +1827,7 @@ function PR_initUser(){
 
         PR_currentUser.id =
         String(tgUser.id);
+        PR_currentUser.telegramId = String(tgUser.id);
 
         PR_currentUser.username =
         String(tgUser.username || "").toLowerCase();
@@ -1978,229 +1996,188 @@ function PR_loadLocalUser(){
    ========================================================= */
 
 async function PR_loadUser(){
-
-    if(
-        !PR_db ||
-        !PR_currentUser.id
-    ){
-
-        PR_updateUI();
-
-        return;
-
-    }
-
-
+    if(!PR_db || !PR_currentUser.id){ PR_updateUI(); return; }
     try{
+        const users=PR_db.collection("users");
+        const telegramId=String(PR_currentUser.telegramId || PR_currentUser.id || "");
+        const username=String(PR_currentUser.username || "").replace(/^@/,"").trim().toLowerCase();
 
-        const ref =
-        PR_db
-        .collection("users")
-        .doc(
-            String(PR_currentUser.id)
-        );
+        // IMPORTANT: never create a new zero-balance document just because the
+        // current Telegram ID does not match the legacy Firestore document ID.
+        let ref=users.doc(telegramId);
+        let doc=await ref.get();
 
+        if(username){
+            const q=await users.where("username","==",username).limit(10).get();
+            if(!q.empty){
+                const candidates=q.docs.filter(d=>String(d.id)!==String(telegramId));
+                // If a duplicate/placeholder doc was created by an older build,
+                // prefer the existing populated record. Never overwrite it.
+                if(!doc.exists){
+                    doc=q.docs[0]; ref=doc.ref;
+                }else if(candidates.length){
+                    const cur=doc.data()||{};
+                    const curScore=Number(cur.balance||0)+Number(cur.totalIncome||0)+Number(cur.totalRef||0)+Number(cur.adsWatched||0);
+                    const best=candidates.slice().sort((a,b)=>{
+                        const A=a.data()||{},B=b.data()||{};
+                        const sa=Number(A.balance||0)+Number(A.totalIncome||0)+Number(A.totalRef||0)+Number(A.adsWatched||0);
+                        const sb=Number(B.balance||0)+Number(B.totalIncome||0)+Number(B.totalRef||0)+Number(B.adsWatched||0);
+                        return sb-sa;
+                    })[0];
+                    const bestScore=best ? (Number(best.data()?.balance||0)+Number(best.data()?.totalIncome||0)+Number(best.data()?.totalRef||0)+Number(best.data()?.adsWatched||0)) : 0;
+                    if(best && bestScore>curScore){ doc=best; ref=best.ref; }
+                }
+            }
+        }
 
-        const doc =
-        await ref.get();
-
-
-        if(
-            !doc.exists
-        ){
-
-            const tgStartParam = PR_tg && PR_tg.initDataUnsafe
-                ? (PR_tg.initDataUnsafe.start_param || "")
-                : "";
-            const rawStartParam = tgStartParam;
-            const normalizedStartParam = String(rawStartParam || "").replace(/^ref_/i, "").replace(/^@/, "").trim();
-
-            let resolvedReferrerId = "";
-            let resolvedReferrerName = "";
-            if(normalizedStartParam && normalizedStartParam !== String(PR_currentUser.id)){
+        if(!doc.exists){
+            const tgStartParam=PR_tg?.initDataUnsafe?.start_param || "";
+            const normalizedStartParam=String(tgStartParam).replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
+            let resolvedReferrerId="", resolvedReferrerName="";
+            if(normalizedStartParam && normalizedStartParam!==telegramId.toLowerCase() && normalizedStartParam!==username){
                 try{
-                    const byId = await PR_db.collection("users").doc(String(normalizedStartParam)).get();
-                    if(byId.exists){
-                        resolvedReferrerId=String(normalizedStartParam);
-                        resolvedReferrerName=byId.data().name||"User";
-                    }else{
-                        const byUsername = await PR_db.collection("users").where("username","==",String(normalizedStartParam).replace(/^@/,"").toLowerCase()).limit(1).get();
-                        if(!byUsername.empty){
-                            const d=byUsername.docs[0];
-                            resolvedReferrerId=d.id;
-                            resolvedReferrerName=d.data().name||"User";
-                        }
-                    }
+                    let r=await users.doc(normalizedStartParam).get();
+                    if(!r.exists){ const q=await users.where("username","==",normalizedStartParam).limit(1).get(); if(!q.empty) r=q.docs[0]; }
+                    if(r?.exists){ resolvedReferrerId=String(r.id); resolvedReferrerName=r.data()?.name||"User"; }
                 }catch(e){ console.error("Referral resolve:",e); }
             }
-
-            const newUser = {
-
-                id:
-                String(
-                    PR_currentUser.id
-                ),
-
-                name:
-                PR_currentUser.name,
-
-                username:
-                PR_currentUser.username || "",
-
-                photoUrl:
-                PR_currentUser.photoUrl || "",
-
-                balance:
-                0,
-
-                totalRef:
-                0,
-                referralBonusTotal:0,
-
-                referrerId:resolvedReferrerId,
-                referrerName:resolvedReferrerName,
-                totalIncome:0,
-                todayIncome:0,
-                incomeDay:"",
-                adsWatched:0,
-                totalWithdrawn:0,
-                taskBonusTotal:0,
-                joinDate:new Date().toISOString(),
-                completedTasks:[],
-                accountActivated:false, activeDirectReferrals:0, level1Commission:0, level2Commission:0, level3Commission:0,
-
-                createdAt:
-                firebase.firestore
-                .FieldValue
-                .serverTimestamp()
-
+            const newUser={
+                id:telegramId, telegramId, name:PR_currentUser.name, username:username,
+                photoUrl:PR_currentUser.photoUrl||"", balance:0, totalRef:0, directRefCount:0,
+                referralBonusTotal:0, referrerId:resolvedReferrerId, referrerName:resolvedReferrerName,
+                totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,taskBonusTotal:0,
+                joinDate:new Date().toISOString(),completedTasks:[],accountActivated:false,
+                activeDirectReferrals:0,level1Commission:0,level2Commission:0,level3Commission:0,
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
             };
-
-
-            await ref.set(
-                newUser
-            );
-
-            if(newUser.referrerId){
-                await PR_applyReferralCommission(newUser.referrerId);
-                await PR_addNotification(newUser.referrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");
+            ref=users.doc(telegramId);
+            await ref.set(newUser);
+            PR_currentUser={...PR_currentUser,...newUser};
+            if(resolvedReferrerId){
+                await PR_applyReferralCommission(resolvedReferrerId,telegramId);
+                await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");
             }
+        }else{
+            const data=doc.data()||{};
+            // Keep the REAL existing Firestore record. No reset-to-zero migration.
+            PR_currentUser.telegramId=String(data.telegramId || telegramId);
+            PR_currentUser.id=String(doc.id);
+            PR_currentUser.name=data.name || PR_currentUser.name || "User";
+            PR_currentUser.username=String(data.username || username || "").replace(/^@/,"").toLowerCase();
+            PR_currentUser.balance=Number(data.balance ?? 0);
+            PR_currentUser.totalRef=Number(data.totalRef ?? 0);
+            PR_currentUser.directRefCount=Number(data.directRefCount ?? data.totalRef ?? 0);
+            PR_currentUser.referralBonusTotal=Number(data.referralBonusTotal ?? 0);
+            PR_currentUser.referrerId=String(data.referrerId || "");
+            PR_currentUser.referrerName=data.referrerName || "";
+            PR_currentUser.totalIncome=Number(data.totalIncome ?? 0);
+            PR_currentUser.todayIncome=Number(data.todayIncome ?? 0);
+            PR_currentUser.incomeDay=data.incomeDay || "";
+            PR_currentUser.adsWatched=Number(data.adsWatched ?? 0);
+            PR_currentUser.totalWithdrawn=Number(data.totalWithdrawn ?? 0);
+            PR_currentUser.taskBonusTotal=Number(data.taskBonusTotal ?? 0);
+            PR_currentUser.joinDate=data.joinDate || data.createdAt || "";
+            PR_currentUser.completedTasks=Array.isArray(data.completedTasks)?data.completedTasks:[];
+            PR_currentUser.accountActivated=!!data.accountActivated;
+            PR_currentUser.activeDirectReferrals=Number(data.activeDirectReferrals ?? 0);
+            PR_currentUser.level1Commission=Number(data.level1Commission ?? 0);
+            PR_currentUser.level2Commission=Number(data.level2Commission ?? 0);
+            PR_currentUser.level3Commission=Number(data.level3Commission ?? 0);
+            PR_currentUser.videoCountSincePopup=Number(data.videoCountSincePopup ?? 0);
 
-            PR_currentUser =
-            newUser;
-
-        }
-
-        else{
-
-            const data =
-            doc.data();
-
-            // If an existing user opens a referral link for the first time,
-            // attach the referrer as long as they do not already have one.
-            // Telegram passes ?startapp=... to initDataUnsafe.start_param.
-            const existingStartParam = PR_tg && PR_tg.initDataUnsafe
-                ? (PR_tg.initDataUnsafe.start_param || "")
-                : "";
-            const existingNormalizedRef = String(existingStartParam || "").replace(/^ref_/i, "").replace(/^@/, "").trim().toLowerCase();
-            if(!data.referrerId && existingNormalizedRef && existingNormalizedRef !== String(PR_currentUser.id).toLowerCase()){
+            const tgStartParam=PR_tg?.initDataUnsafe?.start_param || "";
+            const start=String(tgStartParam).replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
+            if(!PR_currentUser.referrerId && start && start!==String(PR_currentUser.id).toLowerCase() && start!==PR_currentUser.username){
                 try{
-                    let refSnap = await PR_db.collection("users").doc(existingNormalizedRef).get();
-                    if(!refSnap.exists){
-                        const q = await PR_db.collection("users").where("username","==",existingNormalizedRef).limit(1).get();
-                        if(!q.empty) refSnap=q.docs[0];
+                    let r=await users.doc(start).get();
+                    if(!r.exists){ const q=await users.where("username","==",start).limit(1).get(); if(!q.empty) r=q.docs[0]; }
+                    if(r?.exists){
+                        PR_currentUser.referrerId=String(r.id); PR_currentUser.referrerName=r.data()?.name||"User";
+                        await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});
+                        await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);
                     }
-                    if(refSnap && refSnap.exists){
-                        const refData = refSnap.data() || {};
-                        const refId = String(refSnap.id);
-                        await ref.update({
-                            referrerId: refId,
-                            referrerName: refData.name || "User"
-                        });
-                        await PR_applyReferralCommission(refId);
-                        data.referrerId = refId;
-                        data.referrerName = refData.name || "User";
-                    }
-                }catch(e){ console.error("Existing user referral attach:", e); }
+                }catch(e){ console.error("Existing user referral attach:",e); }
             }
-
-            PR_currentUser.balance =
-            Number(
-                data.balance || 0
-            );
-
-
-            PR_currentUser.totalRef = 0;
-            PR_currentUser.directRefCount = 0;
-            PR_currentUser.referralBonusTotal = Number(data.referralBonusTotal || 0);
-
-
-            PR_currentUser.name =
-            data.name ||
-            PR_currentUser.name;
-
-            PR_currentUser.username =
-            String(data.username || PR_currentUser.username || "").toLowerCase();
-            if(PR_currentUser.username && !data.username){
-                ref.update({username:PR_currentUser.username}).catch(()=>{});
-            }
-            PR_createReferralLink();
-            const liveTelegramPhoto = (PR_tg && PR_tg.initDataUnsafe && PR_tg.initDataUnsafe.user)
-                ? String(PR_tg.initDataUnsafe.user.photo_url || "") : "";
-            PR_currentUser.photoUrl = liveTelegramPhoto || data.photoUrl || PR_currentUser.photoUrl || "";
-            if(liveTelegramPhoto && liveTelegramPhoto !== String(data.photoUrl || "")){
-                ref.update({photoUrl:liveTelegramPhoto}).catch(()=>{});
-            }
-            PR_currentUser.referrerId = data.referrerId || "";
-            PR_currentUser.referrerName = data.referrerName || "";
-            PR_currentUser.totalIncome = Number(data.totalIncome || 0);
-            PR_currentUser.todayIncome = Number(data.todayIncome || 0);
-            PR_currentUser.incomeDay = data.incomeDay || "";
-            PR_currentUser.adsWatched = Number(data.adsWatched || 0);
-            PR_currentUser.totalWithdrawn = Number(data.totalWithdrawn || 0);
-            PR_currentUser.taskBonusTotal = Number(data.taskBonusTotal || 0);
-            PR_currentUser.joinDate = data.joinDate || data.createdAt || "";
-
-            PR_currentUser.completedTasks =
-            Array.isArray(
-                data.completedTasks
-            )
-            ?
-            data.completedTasks
-            :
-            [];
-
+            if(PR_currentUser.username && !data.username) ref.update({username:PR_currentUser.username}).catch(()=>{});
+            if(!data.telegramId) ref.update({telegramId:PR_currentUser.telegramId}).catch(()=>{});
+            const livePhoto=String(PR_tg?.initDataUnsafe?.user?.photo_url || "").trim();
+            if(livePhoto && livePhoto!==String(data.photoUrl||"")) ref.update({photoUrl:livePhoto}).catch(()=>{});
+            PR_currentUser.photoUrl=livePhoto || data.photoUrl || PR_currentUser.photoUrl || "";
         }
-
-
+        PR_userDocRef=ref;
+        PR_createReferralLink();
     }catch(error){
-
-        console.error(
-            "Load User:",
-            error
-        );
-
+        console.error("Load User:",error);
+        const box=document.getElementById("prFirebaseStatus");
+        if(box) box.innerText="Firebase error: "+(error.message||error);
     }
-
-
     PR_updateUI();
-    PR_setupAdminUI();
-    PR_renderTasks();
-    PR_loadNotifications();
-    PR_startNotificationListener();
-    PR_loadLiveActivities();
-    PR_startActivityListener();
-    PR_loadReferrerName();
-    PR_loadDirectReferrals();
-    PR_checkActivation();
-    PR_showReferralLevel(1);
-    PR_loadAdminBanners();
-    PR_loadApprovedTasks();
+    PR_setupAdminUI(); PR_renderTasks(); PR_loadNotifications(); PR_startNotificationListener();
+    PR_loadLiveActivities(); PR_startActivityListener(); PR_loadReferrerName(); PR_loadDirectReferrals();
+    PR_checkActivation(); PR_showReferralLevel(1); PR_loadAdminBanners(); PR_loadApprovedTasks();
     if(PR_isAdmin()) PR_loadPendingAdminTasks();
     if(PR_isAdmin()) PR_loadAdminBalanceHistory();
-
+    if(PR_isAdmin()) PR_loadAdminWithdrawals();
+    PR_renderBadges();
+    PR_loadFinancialHistory();
 }
 
+
+function PR_getCurrentUserRef(){
+    if(PR_userDocRef) return PR_userDocRef;
+    if(PR_db && PR_currentUser.id) return PR_db.collection("users").doc(String(PR_currentUser.id));
+    return null;
+}
+
+
+async function PR_renderBadges(){
+    const box=document.getElementById("prBadges"); if(!box)return;
+    const levels=PR_db&&PR_currentUser.id ? await PR_getReferralLevels().catch(()=>[[],[],[]]) : [[],[],[]];
+    const badges=[];
+    if(levels[0].length>0) badges.push("🥇 Level 1 Referrer");
+    if(levels[1].length>0) badges.push("🥈 Level 2 Network");
+    if(levels[2].length>0) badges.push("🥉 Level 3 Network");
+    if(PR_currentUser.accountActivated) badges.push("🟢 Activated");
+    if(PR_isAdmin()) badges.push("👑 Admin");
+    box.innerHTML=badges.length?badges.map(b=>`<span class="pr-theme-option" style="display:inline-block;padding:7px 10px">${PR_escapeHtml(b)}</span>`).join(""):"<span style='color:var(--muted);font-size:12px'>Referral activity হলে badges unlock হবে।</span>";
+}
+async function PR_loadFinancialHistory(){
+    const box=document.getElementById("prFinancialHistory"); if(!box||!PR_db||!PR_currentUser.id)return;
+    try{
+        const snap=await PR_db.collection("earningTransactions").where("userId","==",String(PR_currentUser.id)).limit(50).get();
+        const rows=[]; snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
+        rows.sort((a,b)=>{const ta=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAt||0).getTime();const tb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAt||0).getTime();return tb-ta;});
+        box.innerHTML=rows.length?rows.slice(0,20).map(r=>`<div class="pr-admin-tx"><b>${PR_escapeHtml(r.transactionId||r.id)}</b><br>${PR_escapeHtml(r.type||"transaction")} • ৳${Number(r.amount||0).toFixed(2)} • ${PR_escapeHtml(r.status||"")}<br><small>User ID: ${PR_escapeHtml(r.userId||"")} • Source: ${PR_escapeHtml(r.source||"")} • Ref: ${PR_escapeHtml(r.reference||"")}</small></div>`).join(""):"<div class='pr-ref-empty'>কোনো financial transaction নেই।</div>";
+    }catch(e){console.error("Financial history:",e);box.innerHTML="<div class='pr-ref-empty'>Financial history load failed.</div>";}
+}
+window.PR_loadAdminWithdrawals=async function(){
+    if(!PR_isAdmin()||!PR_db)return; const box=document.getElementById("prAdminWithdrawals"); if(!box)return;
+    try{
+        const snap=await PR_db.collection("withdrawals").limit(100).get(); const rows=[]; snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
+        rows.sort((a,b)=>{const ta=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAt||0).getTime();const tb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAt||0).getTime();return tb-ta;});
+        box.innerHTML=rows.length?rows.map(w=>`<div class="pr-admin-tx"><b>${PR_escapeHtml(w.withdrawalId||w.id)}</b> • ৳${Number(w.amount||0).toFixed(2)}<br>@${PR_escapeHtml(w.telegramUsername||"")} • ${PR_escapeHtml(w.method||"")} • ${PR_escapeHtml(w.wallet||"")}<br>Status: <b>${PR_escapeHtml(w.status||"pending")}</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px"><button class="pr-btn" onclick="PR_adminSetWithdrawal('${String(w.id).replace(/'/g,"\\'")}','processing')">Processing</button><button class="pr-btn success" onclick="PR_adminSetWithdrawal('${String(w.id).replace(/'/g,"\\'")}','approved')">Approve</button><button class="pr-btn" style="background:#7a2020" onclick="PR_adminSetWithdrawal('${String(w.id).replace(/'/g,"\\'")}','rejected')">Reject + Refund</button></div></div>`).join(""):"<div class='pr-ref-empty'>কোনো withdrawal request নেই।</div>";
+    }catch(e){console.error("Admin withdrawals:",e);box.innerHTML="<div class='pr-ref-empty'>Withdrawal list load failed.</div>";}
+};
+window.PR_adminSetWithdrawal=async function(id,status){
+    if(!PR_isAdmin()||!PR_db)return;
+    try{
+        const wRef=PR_db.collection("withdrawals").doc(String(id));
+        await PR_db.runTransaction(async(tx)=>{
+            const ws=await tx.get(wRef); if(!ws.exists)throw new Error("NOT_FOUND");
+            const w=ws.data()||{}; const current=String(w.status||"pending");
+            if(current!=="pending" && !(current==="processing" && status==="approved")) throw new Error("INVALID_STATUS");
+            if(status==="rejected"){
+                const uRef=PR_db.collection("users").doc(String(w.userId)); const us=await tx.get(uRef); if(!us.exists)throw new Error("USER_NOT_FOUND");
+                const before=Number(us.data()?.balance||0), amount=Number(w.amount||0); tx.update(uRef,{balance:before+amount});
+                tx.set(PR_db.collection("earningTransactions").doc(String(w.withdrawalId||id)+"-REFUND"),{transactionId:String(w.withdrawalId||id)+"-REFUND",type:"withdrawal_refund",userId:String(w.userId),amount,beforeBalance:before,afterBalance:before+amount,status:"completed",source:"withdrawal_rejected",reference:String(w.withdrawalId||id),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+            }
+            tx.update(wRef,{status,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),processedBy:String(PR_currentUser.id)});
+        });
+        await PR_addNotification(String((await PR_db.collection("withdrawals").doc(String(id)).get()).data()?.userId||""),"Withdrawal Update",`আপনার withdrawal status: ${status}`);
+        await PR_loadAdminWithdrawals();
+        Swal.fire("Updated",`Withdrawal status: ${status}`,"success");
+    }catch(e){console.error(e);Swal.fire("Error",e.message||"Withdrawal update failed","error");}
+};
 
 /* =========================================================
    UPDATE UI
@@ -2252,7 +2229,7 @@ async function PR_tryLoadTelegramPhoto(){
         PR_currentUser.photoUrl=webAppPhoto;
         PR_setAllAvatarSources(webAppPhoto);
         if(PR_db&&PR_currentUser.id){
-            PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:webAppPhoto}).catch(()=>{});
+            PR_getCurrentUserRef()?.update({photoUrl:webAppPhoto}).catch(()=>{});
         }
         return;
     }
@@ -2282,7 +2259,7 @@ async function PR_tryLoadTelegramPhoto(){
         // This URL contains the bot token and may expire; use only as a fallback.
         // Prefer Telegram's WebApp photo_url whenever available.
         if(PR_db&&PR_currentUser.id){
-            PR_db.collection("users").doc(String(PR_currentUser.id)).update({photoUrl:url}).catch(()=>{});
+            PR_getCurrentUserRef()?.update({photoUrl:url}).catch(()=>{});
         }
     }catch(e){
         console.warn("Telegram profile photo fallback failed",e);
@@ -2311,7 +2288,7 @@ function PR_updateUI(){
     const directRefCount = Number(PR_currentUser.directRefCount ?? PR_currentUser.totalRef ?? 0);
     if(document.getElementById("prHistoryRefs")) document.getElementById("prHistoryRefs").innerText = directRefCount;
     if(document.getElementById("prReferralCount")) document.getElementById("prReferralCount").innerText = directRefCount;
-    if(document.getElementById("prReferralEarned")) document.getElementById("prReferralEarned").innerText = (directRefCount * Number(PR_SETTINGS.referralCommission || 20)).toFixed(2);
+    if(document.getElementById("prReferralEarned")) document.getElementById("prReferralEarned").innerText = (Number(PR_currentUser.level1Commission||0)+Number(PR_currentUser.level2Commission||0)+Number(PR_currentUser.level3Commission||0)+Number(PR_currentUser.referralBonusTotal||0)).toFixed(2);
     if(document.getElementById("prWithdrawnTotal")) document.getElementById("prWithdrawnTotal").innerText = Number(PR_currentUser.totalWithdrawn || 0).toFixed(2);
     if(document.getElementById("prTaskBonusTotal")) document.getElementById("prTaskBonusTotal").innerText = Number(PR_currentUser.taskBonusTotal || 0).toFixed(2);
     if(document.getElementById("prReferrerName")) document.getElementById("prReferrerName").innerText = PR_currentUser.referrerName || "কেউ নেই";
@@ -2580,7 +2557,7 @@ async function PR_loadDirectReferrals(){
         if(countEl) countEl.innerText=count;
 
         const earnedEl=document.getElementById("prReferralEarned");
-        if(earnedEl) earnedEl.innerText=(count*Number(PR_SETTINGS.referralCommission||20)).toFixed(2);
+        if(earnedEl) earnedEl.innerText=(Number(PR_currentUser.level1Commission||0)+Number(PR_currentUser.level2Commission||0)+Number(PR_currentUser.level3Commission||0)+Number(PR_currentUser.referralBonusTotal||0)).toFixed(2);
 
         const historyEl=document.getElementById("prHistoryRefs");
         if(historyEl) historyEl.innerText=count;
@@ -2623,7 +2600,24 @@ async function PR_loadDirectReferrals(){
 
 async function PR_getReferralLevels(){const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"");if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let f=[String(PR_currentUser.id)];for(let i=0;i<3;i++){const n=[];f.forEach(id=>(byRef.get(id)||[]).forEach(u=>{if(!seen.has(u.id)){seen.add(u.id);levels[i].push(u);n.push(u.id);}}));f=n;}return levels;}
 window.PR_showReferralLevel=async function(level){try{const levels=await PR_getReferralLevels(),users=levels[level-1]||[],pct={1:5,2:2,3:1}[level],box=document.getElementById("prReferralLevelList"),sum=document.getElementById("prReferralLevelSummary");document.querySelectorAll(".pr-ref-level-tab").forEach(b=>b.classList.toggle("pr-selected",Number(b.dataset.level)===level));if(sum)sum.innerHTML=`<b>LEVEL ${level}</b> • ${pct}% • মোট সদস্য <b>${users.length}</b>`;if(box)box.innerHTML=users.length?users.map(u=>`<div class="pr-direct-user"><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(u.name||u.username||"User")}</div><div class="pr-direct-username">${u.username?"@"+PR_escapeHtml(u.username):"Telegram ID: "+PR_escapeHtml(u.id)}</div><div class="pr-direct-joined">${Number(u.totalRef||0)>=4?"🟢 Active":"⚪ Inactive"} • Referral: ${Number(u.totalRef||0)}</div></div><div class="pr-direct-earning">${pct}%</div></div>`).join(""):"<div class='pr-direct-empty'>এই level-এ কোনো member নেই।</div>";}catch(e){console.error(e);}};
-async function PR_checkActivation(){if(!PR_db||!PR_currentUser.id)return false;try{const levels=await PR_getReferralLevels(),l1=levels[0]||[],active=l1.filter(u=>Number(u.totalRef||0)>=4).length,total=levels.flat().length,ok=total>=5&&active>=3;PR_currentUser.accountActivated=ok;await PR_db.collection("users").doc(String(PR_currentUser.id)).update({accountActivated:ok,activeDirectReferrals:active});const el=document.getElementById("prActivationStatus");if(el)el.innerHTML=ok?"🟢 <b>Activated</b>":`🟠 Not Activated — Referral ${total}/5, Active Direct ${active}/3`;return ok;}catch(e){console.error(e);return false;}}
+async function PR_checkActivation(){
+    if(!PR_db||!PR_currentUser.id)return false;
+    try{
+        const levels=await PR_getReferralLevels(),l1=levels[0]||[];
+        const active=l1.filter(u=>Number(u.directRefCount ?? u.totalRef ?? 0)>=4).length;
+        const total=levels.flat().length;
+        const wasActive=!!PR_currentUser.accountActivated;
+        const ok=total>=Number(PR_SETTINGS.activation.minSuccessfulReferrals||5)&&active>=Number(PR_SETTINGS.activation.minActiveDirectReferrals||3);
+        PR_currentUser.accountActivated=ok; PR_currentUser.activeDirectReferrals=active; PR_currentUser.totalRef=total; PR_currentUser.directRefCount=l1.length;
+        await PR_getCurrentUserRef()?.update({accountActivated:ok,activeDirectReferrals:active,totalRef:total,directRefCount:l1.length});
+        const el=document.getElementById("prActivationStatus"); if(el)el.innerHTML=ok?"🟢 <b>Activated</b>":`🟠 Not Activated — Total Referral ${total}/5, Active Direct ${active}/3`;
+        if(ok && !wasActive){
+            await PR_addNotification(PR_currentUser.id,"🎉 Account Activated","আপনার account activation সম্পন্ন হয়েছে। এখন referral commission withdrawal করা যাবে।");
+            await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"Account Activated",0);
+        }
+        PR_updateUI(); return ok;
+    }catch(e){console.error("Activation:",e);return false;}
+}
 
 async function PR_applyManualReferral(){
     if(PR_currentUser.referrerId){ Swal.fire("Already Set","আপনার referral already set করা আছে।","info"); return; }
@@ -2639,7 +2633,7 @@ async function PR_applyManualReferral(){
             snap=q.docs[0]; refId=snap.id;
         }
         if(String(refId)===String(PR_currentUser.id)){ Swal.fire("Invalid Code","নিজের referral code ব্যবহার করা যাবে না।","warning"); return; }
-        await PR_db.collection("users").doc(String(PR_currentUser.id)).update({referrerId:String(refId),referrerName:snap.data().name||"User"});
+        await PR_getCurrentUserRef()?.update({referrerId:String(refId),referrerName:snap.data().name||"User"});
         PR_currentUser.referrerId=String(refId); PR_currentUser.referrerName=snap.data().name||"User";
         await PR_applyReferralCommission(refId);
         PR_updateUI();
@@ -2976,13 +2970,21 @@ window.PR_submitUserTask=async function(){
     if(!name||!link||limit<1||rate<=0)return Swal.fire("Missing","Task name, link, limit এবং rate দিন।","warning");
     if(total<=0||total>Number(PR_currentUser.balance||0))return Swal.fire("Insufficient Balance","এই task-এর মোট খরচ ৳"+total.toFixed(2)+"। আপনার balance কম।","warning");
     try{
-        const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
-        await userRef.update({balance:firebase.firestore.FieldValue.increment(-total)});
-        await PR_db.collection("tasks").add({name,link,limit,rate,reward:rate,totalBudget:total,details,ownerId:String(PR_currentUser.id),ownerUsername:PR_currentUser.username||"",status:"pending",completedCount:0,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isPaid:true,icon:"fas fa-bullseye"});
+        const userRef=PR_getCurrentUserRef();
+        const taskId="TASK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+        const taskRef=PR_db.collection("tasks").doc(taskId);
+        const txRef=PR_db.collection("earningTransactions").doc(taskId+"-RESERVE");
+        await PR_db.runTransaction(async(tx)=>{
+            const u=await tx.get(userRef); if(!u.exists) throw new Error("USER_NOT_FOUND");
+            const before=Number(u.data()?.balance||0); if(before<total) throw new Error("INSUFFICIENT_BALANCE");
+            tx.update(userRef,{balance:before-total});
+            tx.set(taskRef,{name,link,limit,rate,reward:rate,totalBudget:total,details,ownerId:String(PR_currentUser.id),ownerUsername:PR_currentUser.username||"",status:"pending",completedCount:0,reservedAmount:total,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isPaid:true,icon:"fas fa-bullseye"});
+            tx.set(txRef,{transactionId:taskId+"-RESERVE",type:"task_reserve",userId:String(PR_currentUser.id),amount:total,beforeBalance:before,afterBalance:before-total,status:"pending",source:"user_task_create",reference:taskId,description:"Paid task budget reserved",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        });
         PR_currentUser.balance-=total;PR_updateUI();PR_closeUserTaskForm();
         ["prUserTaskName","prUserTaskLink","prUserTaskLimit","prUserTaskRate","prUserTaskDetails"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=""});
         Swal.fire("Submitted","Task Admin Approval-এর জন্য পাঠানো হয়েছে। ৳"+total.toFixed(2)+" balance থেকে reserve করা হয়েছে।","success");
-    }catch(e){Swal.fire("Error",e.message||"Task submit failed","error");}
+    }catch(e){Swal.fire(e.message==="INSUFFICIENT_BALANCE"?"Insufficient Balance":"Error",e.message==="INSUFFICIENT_BALANCE"?"আপনার balance কম।":(e.message||"Task submit failed"),e.message==="INSUFFICIENT_BALANCE"?"warning":"error");}
 };
 window.PR_adminCreateTask=async function(){
     if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
@@ -2995,10 +2997,11 @@ window.PR_loadApprovedTasks=async function(){
 };
 window.PR_loadPendingAdminTasks=async function(){
     if(!PR_isAdmin()||!PR_db)return; const box=document.getElementById("prAdminPendingTasks");if(!box)return;box.innerHTML="<div style='color:var(--muted);font-size:12px'>Pending tasks loading...</div>";
-    try{const snap=await PR_db.collection("tasks").where("status","==","pending").get();if(snap.empty){box.innerHTML="<div class='pr-ref-empty'>কোনো pending task নেই।</div>";return;} box.innerHTML="";snap.forEach(d=>{const t={id:d.id,...d.data()};const el=document.createElement("div");el.className="pr-card";el.style.padding="12px";el.innerHTML=`<b>${PR_escapeHtml(t.name)}</b><div style='font-size:11px;color:var(--muted);margin:5px 0'>@${PR_escapeHtml(t.ownerUsername||"")} • Limit ${Number(t.limit||0)} • ৳${Number(t.rate||0).toFixed(2)}/user • Total ৳${Number(t.totalBudget||0).toFixed(2)}</div><div style='font-size:12px;margin-bottom:8px'>${PR_escapeHtml(t.details||"")}</div><button class='pr-btn warning' onclick="PR_adminApproveTask('${d.id}')">Approve</button> <button class='pr-btn' style='background:#7a2020' onclick="PR_adminRejectTask('${d.id}')">Reject + Refund</button>`;box.appendChild(el);});}catch(e){box.innerHTML="<div class='pr-ref-empty'>Pending task load failed.</div>";}
+    try{const snap=await PR_db.collection("tasks").where("status","==","pending").get();if(snap.empty){box.innerHTML="<div class='pr-ref-empty'>কোনো pending task নেই।</div>";return;} box.innerHTML="";snap.forEach(d=>{const t={id:d.id,...d.data()};const el=document.createElement("div");el.className="pr-card";el.style.padding="12px";el.innerHTML=`<b>${PR_escapeHtml(t.name)}</b><div style='font-size:11px;color:var(--muted);margin:5px 0'>@${PR_escapeHtml(t.ownerUsername||"")} • Limit ${Number(t.limit||0)} • ৳${Number(t.rate||0).toFixed(2)}/user • Total ৳${Number(t.totalBudget||0).toFixed(2)}</div><div style='font-size:12px;margin-bottom:8px'>${PR_escapeHtml(t.details||"")}</div><button class='pr-btn warning' onclick="PR_adminApproveTask('${d.id}')">Approve</button> <button class='pr-btn' style='background:#7a2020' onclick="PR_adminRejectTask('${d.id}')">Reject + Refund</button> <button class='pr-btn' style='background:#555' onclick="PR_adminDeleteTask('${d.id}')">Delete</button>`;box.appendChild(el);});}catch(e){box.innerHTML="<div class='pr-ref-empty'>Pending task load failed.</div>";}
 };
-window.PR_adminApproveTask=async function(id){if(!PR_isAdmin())return;try{await PR_db.collection("tasks").doc(String(id)).update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_loadPendingAdminTasks();Swal.fire("Approved","Task live হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Approve failed","error");}};
-window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)return;const t=snap.data()||{};const total=Number(t.totalBudget||0);if(t.ownerId)await PR_db.collection("users").doc(String(t.ownerId)).update({balance:firebase.firestore.FieldValue.increment(total)});await ref.update({status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadPendingAdminTasks();Swal.fire("Rejected","Task reject হয়েছে এবং ৳"+total.toFixed(2)+" refund করা হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Reject failed","error");}};
+window.PR_adminApproveTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)throw new Error("NOT_FOUND");if(String(snap.data()?.status)!=="pending")throw new Error("ALREADY_PROCESSED");await ref.update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_loadPendingAdminTasks();Swal.fire("Approved","Task live হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Approve failed","error");}};
+window.PR_adminDeleteTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)return;const t=snap.data()||{};if(String(t.status)==="pending" && t.ownerId){const uRef=PR_db.collection("users").doc(String(t.ownerId));const total=Number(t.reservedAmount??t.totalBudget??0);await PR_db.runTransaction(async(tx)=>{const us=await tx.get(uRef);if(us.exists)tx.update(uRef,{balance:Number(us.data()?.balance||0)+total});tx.update(ref,{status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});});}else{await ref.update({status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});}await PR_loadPendingAdminTasks();await PR_loadApprovedTasks();Swal.fire("Deleted","Task deleted হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Delete failed","error");}};
+window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));await PR_db.runTransaction(async(tx)=>{const snap=await tx.get(ref);if(!snap.exists)throw new Error("NOT_FOUND");const t=snap.data()||{};if(String(t.status)!=="pending")throw new Error("ALREADY_PROCESSED");const total=Number(t.reservedAmount??t.totalBudget??0);const uRef=PR_db.collection("users").doc(String(t.ownerId));const us=await tx.get(uRef);if(!us.exists)throw new Error("USER_NOT_FOUND");const before=Number(us.data()?.balance||0);tx.update(uRef,{balance:before+total});tx.update(ref,{status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});tx.set(PR_db.collection("earningTransactions").doc(String(id)+"-REFUND"),{transactionId:String(id)+"-REFUND",type:"task_reserve_refund",userId:String(t.ownerId),amount:total,beforeBalance:before,afterBalance:before+total,status:"completed",source:"task_rejected",reference:String(id),createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await PR_loadPendingAdminTasks();Swal.fire("Rejected","Task reject হয়েছে এবং refund করা হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Reject failed","error");}};
 /* =========================================================
    MONETAG WATCH AD
    ========================================================= */
@@ -3047,7 +3050,7 @@ async function PR_showMonetagAd(){
         await window.show_11697562();
         if(!PR_db) throw new Error("FIREBASE_UNAVAILABLE");
 
-        const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
+        const userRef=PR_getCurrentUserRef();
         const adReward=Number(PR_SETTINGS.adReward||0);
         const adTxId="AD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
 
@@ -3483,7 +3486,7 @@ window.PR_transferBalance = async function(){
         }
 
         const targetDoc = snapshot.docs[0];
-        const senderRef = PR_db.collection("users").doc(String(PR_currentUser.id));
+        const senderRef = PR_getCurrentUserRef();
         const receiverRef = targetDoc.ref;
 
         const transferId="TR-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
