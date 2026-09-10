@@ -1029,6 +1029,24 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 .pr-leader-empty small{display:inline-block;margin-top:6px}
 
 
+
+/* ===== BADGES ===== */
+.pr-badge-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:999px;background:linear-gradient(145deg,rgba(255,205,80,.22),rgba(255,255,255,.05));border:1px solid rgba(255,205,80,.34);color:#ffe18a;font-size:11px;font-weight:900;box-shadow:inset 0 1px rgba(255,255,255,.1),0 4px 12px rgba(0,0,0,.22)}
+.pr-badge-chip.manual{background:linear-gradient(145deg,#5a3a11,#24170b);border-color:#e7b94d;color:#ffd86b;box-shadow:0 0 12px rgba(255,190,55,.16),inset 0 1px rgba(255,255,255,.15)}
+.pr-admin-badge-manager select.pr-input{appearance:auto}
+/* ===== LEADERBOARD SCREENSHOT FINISH ===== */
+.pr-shot-podium{position:relative;padding:25px 6px 22px;overflow:hidden}
+.pr-shot-podium:before,.pr-shot-podium:after{content:"";position:absolute;top:0;width:42%;height:68px;opacity:.55;pointer-events:none;background:linear-gradient(145deg,transparent 20%,rgba(255,204,77,.75) 21%,transparent 26%,rgba(255,255,255,.3) 31%,transparent 36%,rgba(255,178,40,.55) 42%,transparent 47%,rgba(255,255,255,.22) 55%,transparent 60%);filter:drop-shadow(0 0 8px rgba(255,180,40,.35))}
+.pr-shot-podium:before{left:-4%;transform:rotate(8deg)}.pr-shot-podium:after{right:-4%;transform:scaleX(-1) rotate(8deg)}
+.pr-shot-podium> .first:after{content:"TOP 1";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);padding:4px 16px;border-radius:9px;background:linear-gradient(145deg,#d89b24,#6d2c14);border:1px solid #ffd85a;color:#fff0ae;font-size:9px;font-weight:1000;letter-spacing:1px;box-shadow:0 4px 10px #0008}
+.pr-shot-podium> .second:after{content:"TOP 2";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);padding:4px 13px;border-radius:8px;background:linear-gradient(145deg,#9d9d9d,#353535);border:1px solid #e9e9e9;color:#fff;font-size:8px;font-weight:1000}
+.pr-shot-podium> .third:after{content:"TOP 3";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);padding:4px 13px;border-radius:8px;background:linear-gradient(145deg,#a75e28,#4a2417);border:1px solid #e3a066;color:#ffe0c1;font-size:8px;font-weight:1000}
+.pr-shot-row{min-height:54px}
+.pr-shot-row:nth-child(1){background:linear-gradient(90deg,rgba(91,62,55,.82),rgba(33,25,29,.93))}
+.pr-shot-row:nth-child(2){background:linear-gradient(90deg,rgba(75,53,51,.78),rgba(31,25,30,.93))}
+.pr-shot-row:nth-child(3){background:linear-gradient(90deg,rgba(65,47,47,.74),rgba(30,24,29,.93))}
+.pr-leader-current{position:sticky;bottom:6px;z-index:8;margin-top:9px;border-color:#e4b64d!important;background:linear-gradient(90deg,rgba(111,88,45,.96),rgba(62,49,31,.98))!important;box-shadow:0 8px 25px rgba(0,0,0,.45),0 0 15px rgba(255,194,65,.12)}
+
 /* ===== SCREENSHOT-INSPIRED ROYAL LEADERBOARD ===== */
 .pr-shot-tabs{display:flex;align-items:center;gap:5px;margin:0 0 12px;padding:5px;border-radius:16px;background:rgba(0,0,0,.35);border:1px solid rgba(255,215,80,.16)}
 .pr-shot-tabs button{border:0;background:transparent;color:#d8d0bd;padding:8px 11px;border-radius:11px;font-weight:800;font-size:11px;cursor:pointer}
@@ -1145,6 +1163,44 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pr-admin-tx:last-child{border-bottom:0}
 .pr-admin-tx b{color:#fff}
 @media(max-width:480px){.pr-balance-admin-grid{grid-template-columns:1fr}.pr-theme-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* ===== SCREENSHOT-MATCH ROYAL LEADERBOARD ===== */
+.pr-lb-shell{position:relative;margin:-4px -4px 0;padding:4px 0 74px;min-height:520px;background:
+radial-gradient(circle at 50% 7%,rgba(255,181,48,.28),transparent 23%),
+linear-gradient(180deg,#301406 0%,#0e0a12 33%,#0b0910 100%);border-radius:18px;overflow:hidden}
+.pr-lb-tabs{display:flex;align-items:center;gap:3px;padding:5px 8px;background:rgba(0,0,0,.38);border-bottom:1px solid rgba(255,203,80,.16)}
+.pr-lb-tabs button{border:0;background:transparent;color:#f4e9d0;font-size:10px;font-weight:900;padding:7px 10px;border-radius:10px}
+.pr-lb-tabs button.active{background:linear-gradient(145deg,#fff2b1,#f39b19 70%,#9c4705);color:#17100a;box-shadow:0 2px 8px rgba(255,165,0,.35)}
+.pr-lb-tabs span{margin-left:auto;color:#ffe5a2;font-size:9px}
+.pr-lb-hero{padding:4px 7px 2px;background:
+linear-gradient(180deg,rgba(255,139,20,.62),rgba(89,34,8,.38) 52%,rgba(13,10,15,.95));
+border-bottom:1px solid rgba(255,209,80,.2);position:relative}
+.pr-lb-wings{text-align:center;color:#f5c24e;font-size:18px;letter-spacing:-5px;height:26px;text-shadow:0 0 8px rgba(255,183,0,.5)}
+.pr-lb-podium{display:grid;grid-template-columns:.95fr 1.1fr .95fr;gap:5px;align-items:end;max-width:300px;margin:0 auto}
+.pr-lb-podium-card{position:relative;text-align:center;padding:6px 3px 10px;border:1px solid rgba(255,211,86,.42);
+background:linear-gradient(180deg,rgba(25,14,13,.15),rgba(29,14,21,.9));clip-path:polygon(7% 0,93% 0,100% 8%,100% 90%,50% 100%,0 90%,0 8%);
+filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
+.pr-lb-podium-card.p1{padding-top:2px;min-height:154px;border-color:#ffd65a;background:linear-gradient(180deg,rgba(75,34,5,.4),rgba(45,17,22,.95))}
+.pr-lb-podium-card.p2{min-height:134px}.pr-lb-podium-card.p3{min-height:124px}
+.pr-lb-crown{font-size:24px;height:25px;color:#ffd85a;text-shadow:0 0 9px rgba(255,183,0,.65)}
+.pr-lb-top-label{font-size:8px;font-weight:1000;color:#ffe89b;margin-bottom:3px}
+.pr-lb-podium-avatar{width:48px;height:48px;border-radius:9px;object-fit:cover;display:flex;align-items:center;justify-content:center;margin:auto;border:2px solid #f8cf52;background:#211817;box-shadow:0 0 10px rgba(255,199,68,.32)}
+.pr-lb-podium-card.p1 .pr-lb-podium-avatar{width:56px;height:56px;border-color:#ffe16d}
+.pr-lb-podium-card.p2 .pr-lb-podium-avatar{border-color:#ddd}.pr-lb-podium-card.p3 .pr-lb-podium-avatar{border-color:#d99355}
+.pr-lb-podium-name{font-size:9px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.pr-lb-mini-badge{font-size:7px;color:#e7c9ff;background:#522a78;border-radius:6px;padding:2px 5px;display:inline-block;margin-top:2px}
+.pr-lb-podium-score{font-size:10px;color:#ffd252;font-weight:1000;margin-top:3px}.pr-lb-podium-score span{font-size:8px}
+.pr-lb-ornament{text-align:center;color:#f6c647;font-size:22px;height:25px;text-shadow:0 0 12px rgba(255,188,35,.6)}
+.pr-lb-list{padding:8px 10px 3px;display:grid;gap:7px}
+.pr-lb-row,.pr-lb-current{display:flex;align-items:center;gap:8px;min-height:45px;padding:6px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(90deg,rgba(54,36,45,.9),rgba(30,23,31,.94));box-shadow:inset 0 1px rgba(255,255,255,.04),0 5px 12px rgba(0,0,0,.2)}
+.pr-lb-rank,.pr-lb-current-rank{width:18px;text-align:center;color:#b7a99e;font-size:11px;font-weight:1000}
+.pr-lb-avatar,.pr-lb-fallback{width:34px;height:34px;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:2px solid #c9a341;background:#30251b;color:#fff;font-weight:1000;font-size:13px}
+.pr-lb-user{min-width:0;flex:1}.pr-lb-name{font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-lb-meta{font-size:8px;color:#c6b8ad;margin-top:2px;display:flex;align-items:center;gap:5px}.pr-lb-badge{background:#542d76;color:#f1d8ff;border-radius:6px;padding:1px 4px;font-size:7px;font-weight:900}
+.pr-lb-score{color:#ffd34e;font-size:11px;font-weight:1000;white-space:nowrap}.pr-lb-score span{font-size:9px}
+.pr-lb-current{position:fixed;left:50%;transform:translateX(-50%);bottom:6px;width:min(92%,360px);z-index:50;background:linear-gradient(180deg,#7b673a,#4d432c);border-color:rgba(255,226,139,.6);box-shadow:0 8px 25px rgba(0,0,0,.55)}
+.pr-lb-current-avatar{border-color:#ffe27a}.pr-lb-current-rank{color:#eee0b9}
+@media(max-width:380px){.pr-lb-podium-card.p1{min-height:145px}.pr-lb-podium-card.p2{min-height:126px}.pr-lb-podium-card.p3{min-height:116px}.pr-lb-podium-avatar{width:43px;height:43px}.pr-lb-podium-card.p1 .pr-lb-podium-avatar{width:51px;height:51px}}
 
 </style>
 
@@ -1266,7 +1322,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
                     <div class="pr-task-reward">
 
-                        +৳2 Reward
+                        +৳1 Reward
 
                     </div>
 
@@ -1414,7 +1470,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 
         <div class="pr-card">
-            <h3 style="margin-top:0">🏅 Badges</h3>
+            <h3 style="margin-top:0"><i class="fas fa-medal"></i> Badges</h3>
             <div id="prBadges" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px"><span class="pr-theme-option">Loading...</span></div>
         </div>
 
@@ -1546,6 +1602,33 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <div id="prAdminPendingTasks" style="margin-top:15px"></div>
         </div>
 
+        <div class="pr-card pr-admin-badge-manager">
+            <div style="font-weight:700"><i class="fas fa-medal"></i> Badge Manager</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">যেকোনো User-কে manual badge দিন। Badge Profile-এর “Badges” section-এ দেখা যাবে।</div>
+            <input id="prAdminBadgeUser" class="pr-input" maxlength="100" placeholder="User ID / @Username">
+            <select id="prAdminBadgePreset" class="pr-input">
+                <option value="">— Preset Badge নির্বাচন করুন —</option>
+                <option value="👑 Royal Member">👑 Royal Member</option>
+                <option value="💎 Diamond Member">💎 Diamond Member</option>
+                <option value="🏆 Champion">🏆 Champion</option>
+                <option value="🔥 Top Earner">🔥 Top Earner</option>
+                <option value="⚡ Super Active">⚡ Super Active</option>
+                <option value="💰 VIP Earner">💰 VIP Earner</option>
+                <option value="🌟 Star User">🌟 Star User</option>
+                <option value="🎯 Task Master">🎯 Task Master</option>
+                <option value="🤝 Referral King">🤝 Referral King</option>
+                <option value="🛡️ Trusted User">🛡️ Trusted User</option>
+            </select>
+            <input id="prAdminBadgeCustom" class="pr-input" maxlength="80" placeholder="অথবা Custom Badge (যেমন: 🐉 Dragon) ">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="pr-btn warning" onclick="PR_adminAddBadge()"><i class="fas fa-plus"></i> Add Badge</button>
+                <button class="pr-btn" style="background:#6b2530" onclick="PR_adminRemoveBadge()"><i class="fas fa-trash"></i> Remove Badge</button>
+                <button class="pr-btn" style="background:#555" onclick="PR_adminLoadUserBadges()"><i class="fas fa-eye"></i> Show Badges</button>
+            </div>
+            <div id="prAdminBadgeStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
+            <div id="prAdminBadgeList" style="margin-top:8px"></div>
+        </div>
+
         <div class="pr-card">
             <div style="font-weight:700"><i class="fas fa-wallet"></i> Admin Balance Manager</div>
             <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">শুধু PR_ADMIN_IDS-এর Admin user নির্বাচন করে balance Add/Remove করতে পারবেন।</div>
@@ -1675,7 +1758,7 @@ const PR_SETTINGS = {
     5,
 
     adReward:
-    2,
+    1,
 
     taskBonusPercent:
     5,
@@ -2076,38 +2159,220 @@ function PR_loadLocalUser(){
 
 async function PR_loadUser(){
     if(!PR_db || !PR_currentUser.id){ PR_updateUI(); return; }
+
     try{
         const users=PR_db.collection("users");
         const telegramId=String(PR_currentUser.telegramId || PR_currentUser.id || "").trim();
         const username=String(PR_currentUser.username || "").replace(/^@/,"").trim().toLowerCase();
         let doc=null;
-        if(telegramId){ const exact=await users.doc(telegramId).get(); if(exact.exists) doc=exact; }
-        const findBest=(snap)=>{
-            if(snap.empty) return null; const docs=snap.docs.slice();
-            const score=d=>{const x=d.data()||{};return Number(x.balance||0)*100+Number(x.totalIncome||0)*10+Number(x.totalRef||0)*5+Number(x.directRefCount||0)*5+Number(x.adsWatched||0)+Number(Array.isArray(x.completedTasks)?x.completedTasks.length:0)+Number(x.totalWithdrawn||0)+(x.referrerId?20:0)+(x.telegramId?10:0);};
-            docs.sort((a,b)=>score(b)-score(a)); return docs[0];
-        };
-        if(!doc&&telegramId)doc=findBest(await users.where("telegramId","==",telegramId).limit(50).get());
-        if(!doc&&telegramId)doc=findBest(await users.where("userId","==",telegramId).limit(50).get());
-        if(!doc&&telegramId)doc=findBest(await users.where("id","==",telegramId).limit(50).get());
-        if(!doc&&username)doc=findBest(await users.where("username","==",username).limit(50).get());
-        let ref=doc?doc.ref:users.doc(telegramId);
-        if(!doc){
-            const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase(); let resolvedReferrerId="",resolvedReferrerName="";
-            if(start&&start!==telegramId.toLowerCase()&&start!==username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){resolvedReferrerId=String(r.id);resolvedReferrerName=r.data()?.name||"User";}}catch(e){console.error("Referrer resolve",e);}}
-            const u={id:telegramId,telegramId,name:PR_currentUser.name,username,photoUrl:PR_currentUser.photoUrl||"",balance:0,totalRef:0,directRefCount:0,referralBonusTotal:0,referrerId:resolvedReferrerId,referrerName:resolvedReferrerName,totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,taskBonusTotal:0,joinDate:new Date().toISOString(),completedTasks:[],accountActivated:false,activeDirectReferrals:0,level1Commission:0,level2Commission:0,level3Commission:0,videoCountSincePopup:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
-            ref=users.doc(telegramId); await ref.set(u); doc=await ref.get(); if(resolvedReferrerId){await PR_applyReferralCommission(resolvedReferrerId,telegramId);await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");}
+
+        // 1) Exact Telegram UID/document ID.
+        if(telegramId){
+            const exact=await users.doc(telegramId).get();
+            if(exact.exists) doc=exact;
         }
-        const data=doc.data()||{}; PR_userDocRef=ref;
-        PR_currentUser={...PR_currentUser,telegramId:String(data.telegramId||telegramId),id:String(doc.id),name:data.name||PR_currentUser.name||"User",username:String(data.username||username||"").replace(/^@/,"").toLowerCase(),balance:Number(data.balance??0),totalRef:Number(data.totalRef??0),directRefCount:Number(data.directRefCount??0),referralBonusTotal:Number(data.referralBonusTotal??0),referrerId:String(data.referrerId||""),referrerName:data.referrerName||"",totalIncome:Number(data.totalIncome??0),todayIncome:Number(data.todayIncome??0),incomeDay:data.incomeDay||"",adsWatched:Number(data.adsWatched??0),totalWithdrawn:Number(data.totalWithdrawn??0),taskBonusTotal:Number(data.taskBonusTotal??0),joinDate:data.joinDate||data.createdAt||"",completedTasks:Array.isArray(data.completedTasks)?data.completedTasks:[],completedTasksCount:Number(data.completedTasksCount??(Array.isArray(data.completedTasks)?data.completedTasks.length:0)),accountActivated:!!data.accountActivated,activeDirectReferrals:Number(data.activeDirectReferrals??0),level1Commission:Number(data.level1Commission??0),level2Commission:Number(data.level2Commission??0),level3Commission:Number(data.level3Commission??0),videoCountSincePopup:Number(data.videoCountSincePopup??0)};
-        const ident={};if(!data.telegramId&&telegramId)ident.telegramId=telegramId;if(!data.username&&username)ident.username=username;if(Object.keys(ident).length)ref.update(ident).catch(()=>{});
-        const live=String(PR_tg?.initDataUnsafe?.user?.photo_url||"").trim();if(live&&live!==String(data.photoUrl||""))ref.update({photoUrl:live}).catch(()=>{});PR_currentUser.photoUrl=live||data.photoUrl||PR_currentUser.photoUrl||"";
-        const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
-        if(!PR_currentUser.referrerId&&start&&start!==String(PR_currentUser.id).toLowerCase()&&start!==PR_currentUser.username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){PR_currentUser.referrerId=String(r.id);PR_currentUser.referrerName=r.data().name||"User";await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);}}catch(e){console.error("Attach referral",e);}}
-        PR_createReferralLink(); const status=document.getElementById("prFirebaseStatus");if(status)status.innerText=`Firebase account: ${PR_currentUser.id} • Balance ৳${Number(PR_currentUser.balance||0).toFixed(2)}`;
-    }catch(error){console.error("Load User:",error);const box=document.getElementById("prFirebaseStatus");if(box)box.innerText="Firebase error: "+(error.message||error);}
-    PR_updateUI();PR_setupAdminUI();PR_renderTasks();PR_loadNotifications();PR_startNotificationListener();PR_loadLiveActivities();PR_startActivityListener();PR_loadReferrerName();PR_loadDirectReferrals();PR_checkActivation();PR_showReferralLevel(1);PR_loadAdminBanners();PR_loadApprovedTasks();if(PR_isAdmin())PR_loadPendingAdminTasks();if(PR_isAdmin())PR_loadAdminBalanceHistory();if(PR_isAdmin())PR_loadAdminWithdrawals();PR_renderBadges();PR_loadFinancialHistory();if(PR_isAdmin())PR_seedImportedUserData().catch(()=>{});
+
+        // 2) Existing legacy records.
+        const findBest=(snap)=>{
+            if(snap.empty)return null;
+            const docs=snap.docs.slice();
+            const score=d=>{
+                const x=d.data()||{};
+                return Number(x.balance||0)*100+
+                    Number(x.totalIncome||0)*10+
+                    Number(x.totalRef||0)*5+
+                    Number(x.directRefCount||0)*5+
+                    Number(x.adsWatched||0)+
+                    Number(Array.isArray(x.completedTasks)?x.completedTasks.length:0)+
+                    Number(x.totalWithdrawn||0)+
+                    (x.referrerId?20:0)+(x.telegramId?10:0);
+            };
+            docs.sort((a,b)=>score(b)-score(a));
+            return docs[0];
+        };
+
+        if(!doc && telegramId) doc=findBest(await users.where("telegramId","==",telegramId).limit(50).get());
+        if(!doc && telegramId) doc=findBest(await users.where("userId","==",telegramId).limit(50).get());
+        if(!doc && telegramId) doc=findBest(await users.where("id","==",telegramId).limit(50).get());
+        if(!doc && username) doc=findBest(await users.where("username","==",username).limit(50).get());
+
+        // 3) IMPORTANT: if Firebase does not have the record yet, use the exact
+        // user data supplied in this project instead of creating a zero-balance user.
+        if(!doc && Array.isArray(PR_IMPORTED_USER_DATA)){
+            const imported=PR_IMPORTED_USER_DATA.find(u =>
+                String(u.id)===telegramId ||
+                (username && String(u.username||"").replace(/^@/,"").toLowerCase()===username)
+            );
+            if(imported){
+                const importedData={
+                    ...imported,
+                    id:String(imported.id),
+                    telegramId:String(imported.id),
+                    username:String(imported.username||username||"").replace(/^@/,"").toLowerCase(),
+                    photoUrl:String(imported.photoUrl||PR_currentUser.photoUrl||""),
+                    completedTasks:Array.isArray(imported.completedTasks)?imported.completedTasks:[],
+                    completedTasksCount:Number(imported.completedTasksCount||0),
+                    accountActivated:!!imported.accountActivated,
+                    activeDirectReferrals:Number(imported.activeDirectReferrals||0),
+                    level1Commission:Number(imported.level1Commission||0),
+                    level2Commission:Number(imported.level2Commission||0),
+                    level3Commission:Number(imported.level3Commission||0),
+                    videoCountSincePopup:Number(imported.videoCountSincePopup||0),
+                    totalWithdrawn:Number(imported.totalWithdrawn||0)
+                };
+                doc={ref:users.doc(String(imported.id)),data:()=>importedData,exists:true,id:String(imported.id)};
+                try{
+                    await doc.ref.set({
+                        ...importedData,
+                        createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+                        syncedFromUserSnapshot:true
+                    },{merge:true});
+                    doc=await doc.ref.get();
+                }catch(e){
+                    // If Rules block the first sync, the supplied snapshot still
+                    // remains available locally for display; later actions will retry.
+                    console.warn("Snapshot sync blocked:",e);
+                }
+            }
+        }
+
+        let ref=doc?doc.ref:users.doc(telegramId);
+
+        // 4) Only create a genuinely new account if neither Firebase nor the supplied
+        // snapshot contains the Telegram user.
+        if(!doc){
+            const startParam=String(PR_tg?.initDataUnsafe?.start_param||"")
+                .replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
+
+            let resolvedReferrerId="",resolvedReferrerName="";
+            if(startParam && startParam!==telegramId.toLowerCase() && startParam!==username){
+                try{
+                    let r=await users.doc(startParam).get();
+                    if(!r.exists){
+                        const q=await users.where("username","==",startParam).limit(1).get();
+                        if(!q.empty) r=q.docs[0];
+                    }
+                    if(r?.exists){
+                        resolvedReferrerId=String(r.id);
+                        resolvedReferrerName=r.data()?.name||"User";
+                    }
+                }catch(e){console.error("Referrer resolve",e);}
+            }
+
+            const u={
+                id:telegramId,
+                telegramId,
+                name:PR_currentUser.name,
+                username,
+                photoUrl:PR_currentUser.photoUrl||"",
+                balance:0,totalRef:0,directRefCount:0,referralBonusTotal:0,
+                referrerId:resolvedReferrerId,referrerName:resolvedReferrerName,
+                totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,
+                taskBonusTotal:0,joinDate:new Date().toISOString(),completedTasks:[],
+                completedTasksCount:0,accountActivated:false,activeDirectReferrals:0,
+                level1Commission:0,level2Commission:0,level3Commission:0,videoCountSincePopup:0,
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            };
+            ref=users.doc(telegramId);
+            await ref.set(u);
+            doc=await ref.get();
+
+            if(resolvedReferrerId){
+                await PR_applyReferralCommission(resolvedReferrerId,telegramId);
+                await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");
+            }
+        }
+
+        const data=doc.data()||{};
+        PR_userDocRef=ref;
+
+        PR_currentUser={
+            ...PR_currentUser,
+            telegramId:String(data.telegramId||telegramId),
+            id:String(doc.id),
+            name:data.name||PR_currentUser.name||"User",
+            username:String(data.username||username||"").replace(/^@/,"").toLowerCase(),
+            photoUrl:String(data.photoUrl||PR_currentUser.photoUrl||""),
+            balance:Number(data.balance??0),
+            totalRef:Number(data.totalRef??0),
+            directRefCount:Number(data.directRefCount??0),
+            referralBonusTotal:Number(data.referralBonusTotal??0),
+            referrerId:String(data.referrerId||""),
+            referrerName:data.referrerName||"",
+            totalIncome:Number(data.totalIncome??0),
+            todayIncome:Number(data.todayIncome??0),
+            incomeDay:data.incomeDay||"",
+            adsWatched:Number(data.adsWatched??0),
+            totalWithdrawn:Number(data.totalWithdrawn??0),
+            taskBonusTotal:Number(data.taskBonusTotal??0),
+            joinDate:data.joinDate||data.createdAt||"",
+            completedTasks:Array.isArray(data.completedTasks)?data.completedTasks:[],
+            completedTasksCount:Number(data.completedTasksCount??(Array.isArray(data.completedTasks)?data.completedTasks.length:0)),
+            accountActivated:!!data.accountActivated,
+            activeDirectReferrals:Number(data.activeDirectReferrals??0),
+            level1Commission:Number(data.level1Commission??0),
+            level2Commission:Number(data.level2Commission??0),
+            level3Commission:Number(data.level3Commission??0),
+            videoCountSincePopup:Number(data.videoCountSincePopup??0),
+            manualBadges:Array.isArray(data.manualBadges)?data.manualBadges:[]
+        };
+
+        // Non-destructive identity/photo sync.
+        const ident={};
+        if(!data.telegramId && telegramId)ident.telegramId=telegramId;
+        if(!data.username && username)ident.username=username;
+        const live=String(PR_tg?.initDataUnsafe?.user?.photo_url||"").trim();
+        if(live && live!==String(data.photoUrl||""))ident.photoUrl=live;
+        if(Object.keys(ident).length)ref.update(ident).catch(()=>{});
+        PR_currentUser.photoUrl=live||data.photoUrl||PR_currentUser.photoUrl||"";
+
+        PR_createReferralLink();
+        const status=document.getElementById("prFirebaseStatus");
+        if(status){
+            status.innerText=`Firebase account: ${PR_currentUser.id} • @${PR_currentUser.username||"no_username"} • Balance ৳${Number(PR_currentUser.balance||0).toFixed(2)} • Ref ${Number(PR_currentUser.totalRef||PR_currentUser.directRefCount||0)}`;
+        }
+    }catch(error){
+        console.error("Load User:",error);
+        const box=document.getElementById("prFirebaseStatus");
+        if(box)box.innerText="Firebase error: "+(error.message||error);
+    }
+
+    PR_updateUI();
+    PR_setupAdminUI();
+    PR_renderTasks();
+    PR_loadNotifications();
+    PR_startNotificationListener();
+    PR_loadLiveActivities();
+    PR_startActivityListener();
+    PR_loadReferrerName();
+    PR_loadDirectReferrals();
+    PR_checkActivation();
+    PR_showReferralLevel(1);
+    PR_loadAdminBanners();
+    PR_loadApprovedTasks();
+    if(PR_isAdmin())PR_loadPendingAdminTasks();
+    if(PR_isAdmin())PR_loadAdminBalanceHistory();
+    if(PR_isAdmin())PR_loadAdminWithdrawals();
+    PR_renderBadges();
+    PR_loadFinancialHistory();
+    PR_retryPendingRewards().catch(()=>{});
+    if(PR_isAdmin())PR_seedImportedUserData().catch(()=>{});
 }
+
+window.PR_checkFirebaseWrite=async function(){
+    try{
+        const ref=PR_getCurrentUserRef();
+        if(!PR_db||!ref)throw new Error("Firebase user reference unavailable");
+        const snap=await ref.get();
+        if(!snap.exists)throw new Error("Firebase user document missing");
+        const d=snap.data()||{};
+        Swal.fire("Firebase OK",
+            `UID: ${PR_currentUser.id}<br>Username: @${PR_escapeHtml(d.username||"")}<br>Balance: ৳${Number(d.balance||0).toFixed(2)}<br>Referrer: ${PR_escapeHtml(d.referrerName||d.referrerId||"None")}`,
+            "success");
+    }catch(e){
+        Swal.fire("Firebase Check Failed",PR_escapeHtml(e.message||String(e)),"error");
+    }
+};
 
 function PR_getCurrentUserRef(){
     if(PR_userDocRef) return PR_userDocRef;
@@ -2118,15 +2383,20 @@ function PR_getCurrentUserRef(){
 
 async function PR_renderBadges(){
     const box=document.getElementById("prBadges"); if(!box)return;
-    const levels=PR_db&&PR_currentUser.id ? await PR_getReferralLevels().catch(()=>[[],[],[]]) : [[],[],[]];
-    const badges=[];
-    if(levels[0].length>0) badges.push("🥇 Level 1 Referrer");
-    if(levels[1].length>0) badges.push("🥈 Level 2 Network");
-    if(levels[2].length>0) badges.push("🥉 Level 3 Network");
-    if(PR_currentUser.accountActivated) badges.push("🟢 Activated");
-    if(PR_isAdmin()) badges.push("👑 Admin");
-    box.innerHTML=badges.length?badges.map(b=>`<span class="pr-theme-option" style="display:inline-block;padding:7px 10px">${PR_escapeHtml(b)}</span>`).join(""):"<span style='color:var(--muted);font-size:12px'>Referral activity হলে badges unlock হবে।</span>";
+    try{
+        const levels=PR_db&&PR_currentUser.id ? await PR_getReferralLevels().catch(()=>[[],[],[]]) : [[],[],[]];
+        const badges=[];
+        const manual=Array.isArray(PR_currentUser.manualBadges)?PR_currentUser.manualBadges:[];
+        manual.forEach(b=>{ if(String(b||"").trim()) badges.push({label:String(b),manual:true}); });
+        if(levels[0].length>0) badges.push({label:"🥇 Level 1 Referrer"});
+        if(levels[1].length>0) badges.push({label:"🥈 Level 2 Network"});
+        if(levels[2].length>0) badges.push({label:"🥉 Level 3 Network"});
+        if(PR_currentUser.accountActivated) badges.push({label:"🟢 Activated"});
+        if(PR_isAdmin()) badges.push({label:"👑 Admin"});
+        box.innerHTML=badges.length?badges.map(b=>`<span class="pr-badge-chip ${b.manual?'manual':''}">${PR_escapeHtml(b.label)}</span>`).join(""):"<span style='color:var(--muted);font-size:12px'>কোনো badge এখনো নেই।</span>";
+    }catch(e){ console.error("Badges:",e); box.innerHTML="<span style='color:var(--muted);font-size:12px'>Badge load failed.</span>"; }
 }
+
 async function PR_loadFinancialHistory(){
     const box=document.getElementById("prFinancialHistory"); if(!box||!PR_db||!PR_currentUser.id)return;
     try{
@@ -2561,16 +2831,29 @@ async function PR_applyManualReferral(){
 
 function PR_renderTasks(){
     const container=document.getElementById("prTaskList");
-    if(!container) return;
+    if(!container)return;
     container.innerHTML="";
+
     const baseTasks=(PR_SETTINGS.tasks||[]).map(t=>({...t,isPaid:false,reward:Number(PR_SETTINGS.joinReward||0),limit:0,completedCount:0}));
     const custom=window.PR_approvedTasks||[];
+
     [...baseTasks,...custom].forEach(task=>{
-        const completed=(PR_currentUser.completedTasks||[]).includes(String(task.id));
-        const remaining=task.limit>0 ? Math.max(0,Number(task.limit)-Number(task.completedCount||0)) : null;
-        if(task.limit>0 && remaining<=0 && !completed) return;
-        const card=document.createElement("div"); card.className="pr-card";
-        card.innerHTML=`<div class="pr-task"><div class="pr-task-icon"><i class="${PR_escapeHtml(task.icon||"fas fa-bullseye")}"></i></div><div class="pr-task-info"><div class="pr-task-title">${PR_escapeHtml(task.name||"Task")}</div><div class="pr-task-reward">${completed?"✓ Completed":"+৳"+Number(task.reward||0).toFixed(2)}${task.limit>0?" • Limit: "+Number(task.limit):""}</div>${task.details?`<div style="color:var(--muted);font-size:11px;margin-top:4px">${PR_escapeHtml(task.details)}</div>`:""}</div><button class="pr-btn ${completed?"disabled":""}" ${completed?"disabled":""} onclick="PR_joinTask('${String(task.id).replace(/'/g,"\\'")}','${String(task.link||"").replace(/'/g,"\\'")}',${Number(task.reward||0)},${task.isPaid?"true":"false"})">${completed?"Completed":"Join"}</button></div>`;
+        const count=Number(task.completedCount||0);
+        const remaining=task.limit>0 ? Math.max(0,Number(task.limit)-count) : null;
+        if(task.limit>0 && remaining<=0)return;
+
+        const card=document.createElement("div");
+        card.className="pr-card";
+        card.innerHTML=`
+            <div class="pr-task">
+                <div class="pr-task-icon"><i class="${PR_escapeHtml(task.icon||"fas fa-bullseye")}"></i></div>
+                <div class="pr-task-info">
+                    <div class="pr-task-title">${PR_escapeHtml(task.name||"Task")}</div>
+                    <div class="pr-task-reward">+৳${Number(task.reward||0).toFixed(2)}${task.limit>0?" • Remaining: "+remaining:""} • Repeat allowed</div>
+                    ${task.details?`<div style="color:var(--muted);font-size:11px;margin-top:4px">${PR_escapeHtml(task.details)}</div>`:""}
+                </div>
+                <button class="pr-btn" onclick="PR_joinTask('${String(task.id).replace(/'/g,"\\'")}','${String(task.link||"").replace(/'/g,"\\'")}',${Number(task.reward||0)},${task.isPaid?"true":"false"})">Join</button>
+            </div>`;
         container.appendChild(card);
     });
 }
@@ -2580,14 +2863,73 @@ function PR_renderTasks(){
    ========================================================= */
 
 window.PR_joinTask=async function(taskId,link,taskRewardArg,isPaid){
-    const taskReward=Number(taskRewardArg||PR_SETTINGS.joinReward||0); if(taskReward<=0)return;
-    window.open(link,"_blank"); const result=await Swal.fire({title:"Task Complete?",text:"Task সম্পন্ন হলে reward আপনার balance-এ যোগ হবে।",icon:"question",showCancelButton:true,confirmButtonText:"Confirm",cancelButtonText:"Cancel"}); if(!result.isConfirmed)return;
-    try{const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const snap=await userRef.get();if(!snap.exists)throw new Error("USER_NOT_FOUND");const d=snap.data()||{},before=Number(d.balance||0),day=new Date().toISOString().slice(0,10),after=Number((before+taskReward).toFixed(2));
-        await userRef.update({balance:after,totalIncome:Number(d.totalIncome||0)+taskReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward,incomeDay:day,completedTasks:firebase.firestore.FieldValue.arrayUnion(String(taskId)),completedTasksCount:firebase.firestore.FieldValue.increment(1)});
-        if(isPaid)PR_db.collection("tasks").doc(String(taskId)).update({completedCount:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
-        PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(d.totalIncome||0)+taskReward;PR_currentUser.todayIncome=String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward;PR_currentUser.incomeDay=day;if(!Array.isArray(PR_currentUser.completedTasks))PR_currentUser.completedTasks=[];PR_currentUser.completedTasks.push(String(taskId));PR_currentUser.completedTasksCount=Number(PR_currentUser.completedTasksCount||PR_currentUser.completedTasks.length||0)+1;
-        if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,taskReward,PR_currentUser.name||PR_currentUser.username||"User",Date.now().toString(),"task");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"টাস্ক করেছেন",taskReward);PR_updateUI();PR_renderTasks();Swal.fire({title:"সফল!",text:"৳"+taskReward.toFixed(2)+" reward আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
-    }catch(e){console.error("Task complete",e);Swal.fire("Error","Task reward যোগ করা যায়নি। Firebase connection/Rules check করুন।","error");}
+    const taskReward=Number(taskRewardArg||PR_SETTINGS.joinReward||0);
+    if(taskReward<=0)return;
+
+    try{ window.open(link,"_blank"); }catch(e){}
+
+    const result=await Swal.fire({
+        title:"Task Complete?",
+        text:"Task সম্পন্ন হলে reward আপনার balance-এ যোগ হবে। একই task আবার করলেও reward পাওয়া যাবে।",
+        icon:"question",
+        showCancelButton:true,
+        confirmButtonText:"Confirm",
+        cancelButtonText:"Cancel"
+    });
+    if(!result.isConfirmed)return;
+
+    try{
+        const extra={
+            completedTasks:firebase.firestore.FieldValue.arrayUnion(String(taskId)),
+            completedTasksCount:firebase.firestore.FieldValue.increment(1)
+        };
+        const resultData=await PR_creditCurrentUser(taskReward,"task_reward",extra);
+
+        if(isPaid && PR_db){
+            PR_db.collection("tasks").doc(String(taskId))
+                .update({completedCount:firebase.firestore.FieldValue.increment(1)})
+                .catch(()=>{});
+        }
+
+        if(!Array.isArray(PR_currentUser.completedTasks))PR_currentUser.completedTasks=[];
+        PR_currentUser.completedTasks.push(String(taskId));
+        PR_currentUser.completedTasksCount=Number(PR_currentUser.completedTasksCount||0)+1;
+
+        if(PR_currentUser.referrerId){
+            await PR_applyTaskBonus(
+                PR_currentUser.referrerId,
+                taskReward,
+                PR_currentUser.name||PR_currentUser.username||"User",
+                Date.now().toString(),
+                "task"
+            );
+        }
+
+        await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"টাস্ক করেছেন",taskReward);
+        PR_updateUI();
+        PR_renderTasks();
+
+        Swal.fire({
+            title:"সফল!",
+            text:"৳"+taskReward.toFixed(2)+" reward balance-এ যোগ হয়েছে।",
+            icon:"success",
+            timer:1800,
+            showConfirmButton:false
+        });
+    }catch(e){
+        console.error("Task reward write failed:",e);
+        let pending=[];
+        try{pending=JSON.parse(localStorage.getItem("pr_pending_rewards")||"[]");}catch(x){}
+        pending.push({amount:taskReward,source:"task_reward",taskId:String(taskId),createdAt:Date.now()});
+        try{localStorage.setItem("pr_pending_rewards",JSON.stringify(pending.slice(-20)));}catch(x){}
+
+        const msg=String(e.message||e);
+        if(msg.includes("permission-denied")||msg.includes("PERMISSION_DENIED")){
+            Swal.fire("Firebase Rules Blocked","Task reward write Firebase Security Rules দ্বারা blocked হয়েছে। নিচের Rules ফাইলটি Firebase Console → Firestore Database → Rules-এ publish করতে হবে।","error");
+        }else{
+            Swal.fire("Task Reward Pending","Task reward ৳"+taskReward.toFixed(2)+" সংরক্ষণ হয়নি। Connection ঠিক হলে app আবার automatically retry করবে।","warning");
+        }
+    }
 };
 
 /* =========================================================
@@ -2775,6 +3117,36 @@ window.PR_adminApproveTask=async function(id){if(!PR_isAdmin())return;try{const 
 window.PR_adminDeleteTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)return;const t=snap.data()||{};if(String(t.status)==="pending" && t.ownerId){const uRef=PR_db.collection("users").doc(String(t.ownerId));const total=Number(t.reservedAmount??t.totalBudget??0);await PR_db.runTransaction(async(tx)=>{const us=await tx.get(uRef);if(us.exists)tx.update(uRef,{balance:Number(us.data()?.balance||0)+total});tx.update(ref,{status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});});}else{await ref.update({status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});}await PR_loadPendingAdminTasks();await PR_loadApprovedTasks();Swal.fire("Deleted","Task deleted হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Delete failed","error");}};
 window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));await PR_db.runTransaction(async(tx)=>{const snap=await tx.get(ref);if(!snap.exists)throw new Error("NOT_FOUND");const t=snap.data()||{};if(String(t.status)!=="pending")throw new Error("ALREADY_PROCESSED");const total=Number(t.reservedAmount??t.totalBudget??0);const uRef=PR_db.collection("users").doc(String(t.ownerId));const us=await tx.get(uRef);if(!us.exists)throw new Error("USER_NOT_FOUND");const before=Number(us.data()?.balance||0);tx.update(uRef,{balance:before+total});tx.update(ref,{status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});tx.set(PR_db.collection("earningTransactions").doc(String(id)+"-REFUND"),{transactionId:String(id)+"-REFUND",type:"task_reserve_refund",userId:String(t.ownerId),amount:total,beforeBalance:before,afterBalance:before+total,status:"completed",source:"task_rejected",reference:String(id),createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await PR_loadPendingAdminTasks();Swal.fire("Rejected","Task reject হয়েছে এবং refund করা হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Reject failed","error");}};
 /* =========================================================
+   ADMIN MANUAL BADGES
+   ========================================================= */
+async function PR_adminFindUser(value){
+    const q=String(value||"").trim().replace(/^@/,"").toLowerCase();
+    if(!PR_isAdmin()||!PR_db||!q)throw new Error("USER_REQUIRED");
+    let ref=PR_db.collection("users").doc(q), snap=await ref.get();
+    if(snap.exists)return snap;
+    const byId=await PR_db.collection("users").where("telegramId","==",q).limit(1).get(); if(!byId.empty)return byId.docs[0];
+    const byUser=await PR_db.collection("users").where("username","==",q).limit(1).get(); if(!byUser.empty)return byUser.docs[0];
+    const byUserAt=await PR_db.collection("users").where("username","==","@"+q).limit(1).get(); if(!byUserAt.empty)return byUserAt.docs[0];
+    throw new Error("USER_NOT_FOUND");
+}
+window.PR_adminLoadUserBadges=async function(){
+    const status=document.getElementById("prAdminBadgeStatus"),box=document.getElementById("prAdminBadgeList");
+    try{const snap=await PR_adminFindUser(document.getElementById("prAdminBadgeUser")?.value);const b=Array.isArray(snap.data()?.manualBadges)?snap.data().manualBadges:[];if(status)status.innerText=`User: ${snap.data()?.name||snap.id} • ${b.length} manual badge`;if(box)box.innerHTML=b.length?b.map(x=>`<span class="pr-badge-chip manual" style="margin:3px">${PR_escapeHtml(x)}</span>`).join(""):`<span style="color:var(--muted);font-size:12px">Manual badge নেই।</span>`;}catch(e){if(status)status.innerText=e.message==="USER_NOT_FOUND"?"User পাওয়া যায়নি।":"User দিন।";if(box)box.innerHTML="";}
+};
+window.PR_adminAddBadge=async function(){
+    if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
+    const value=document.getElementById("prAdminBadgeUser")?.value, preset=document.getElementById("prAdminBadgePreset")?.value||"", custom=(document.getElementById("prAdminBadgeCustom")?.value||"").trim();
+    const badge=(custom||preset).trim(); if(!badge)return Swal.fire("Missing","একটি preset বা custom badge দিন।","warning");
+    try{const snap=await PR_adminFindUser(value);const ref=snap.ref;const old=Array.isArray(snap.data()?.manualBadges)?snap.data().manualBadges:[];if(old.includes(badge))return Swal.fire("Already Added","এই badge আগে থেকেই আছে।","info");await ref.update({manualBadges:firebase.firestore.FieldValue.arrayUnion(badge)});if(PR_getCurrentUserRef()&&String(PR_getCurrentUserRef().path)===String(ref.path)){PR_currentUser.manualBadges=[...old,badge];PR_renderBadges();}await PR_adminLoadUserBadges();document.getElementById("prAdminBadgeCustom").value="";Swal.fire("Badge Added","User-এর Profile → Badges section-এ badge যোগ হয়েছে।","success");}catch(e){Swal.fire(e.message==="USER_NOT_FOUND"?"User Not Found":"Error",e.message==="USER_NOT_FOUND"?"User পাওয়া যায়নি।":(e.message||"Badge add failed"),"error");}
+};
+window.PR_adminRemoveBadge=async function(){
+    if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
+    const value=document.getElementById("prAdminBadgeUser")?.value, preset=document.getElementById("prAdminBadgePreset")?.value||"", custom=(document.getElementById("prAdminBadgeCustom")?.value||"").trim(), badge=(custom||preset).trim();
+    if(!badge)return Swal.fire("Missing","যে badge remove করবেন সেটি নির্বাচন/লিখুন।","warning");
+    try{const snap=await PR_adminFindUser(value);const ref=snap.ref;await ref.update({manualBadges:firebase.firestore.FieldValue.arrayRemove(badge)});if(PR_getCurrentUserRef()&&String(PR_getCurrentUserRef().path)===String(ref.path)){PR_currentUser.manualBadges=(PR_currentUser.manualBadges||[]).filter(x=>x!==badge);PR_renderBadges();}await PR_adminLoadUserBadges();Swal.fire("Removed","Badge remove হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Badge remove failed","error");}
+};
+
+/* =========================================================
    MONETAG WATCH AD
    ========================================================= */
 
@@ -2816,16 +3188,70 @@ async function(){
 };
 
 async function PR_showMonetagAd(){
-    if(PR_showMonetagAd.busy)return;PR_showMonetagAd.busy=true;
-    try{if(typeof window.show_11697562!=="function")throw new Error("AD_SDK_NOT_READY");
-        let adShown=false,lastAdError=null;
-        for(let attempt=0;attempt<2 && !adShown;attempt++){
-            try{await window.show_11697562();adShown=true;}
-            catch(e){lastAdError=e;if(attempt===0)await new Promise(r=>setTimeout(r,900));}
+    if(PR_showMonetagAd.busy)return;
+    PR_showMonetagAd.busy=true;
+
+    try{
+        if(typeof window.show_11697562!=="function")throw new Error("AD_SDK_NOT_READY");
+
+        // Monetag Rewarded Interstitial resolves when the rewarded ad flow completes.
+        // ymid ties the ad event to this Telegram user.
+        const ymid=String(PR_currentUser.telegramId||PR_currentUser.id||"");
+        await window.show_11697562({ymid});
+
+        // Do not fake-credit a rejected/no-fill ad. Credit only after SDK resolves.
+        const reward=Number(PR_SETTINGS.adReward||1);
+        await PR_creditCurrentUser(reward,"ad_reward",{
+            adsWatched:firebase.firestore.FieldValue.increment(1)
+        });
+
+        PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1;
+        PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;
+
+        if(PR_currentUser.videoCountSincePopup>=50){
+            PR_currentUser.videoCountSincePopup=0;
+            setTimeout(()=>PR_video50Popup(),250);
         }
-        if(!adShown)throw (lastAdError||new Error("AD_FAILED"));
-        if(!PR_db)throw new Error("FIREBASE_UNAVAILABLE");const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const snap=await userRef.get();if(!snap.exists)throw new Error("USER_NOT_FOUND");const d=snap.data()||{},adReward=Number(PR_SETTINGS.adReward||0),before=Number(d.balance||0),after=Number((before+adReward).toFixed(2)),day=new Date().toISOString().slice(0,10);await userRef.update({balance:after,totalIncome:Number(d.totalIncome||0)+adReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+adReward:adReward,incomeDay:day,adsWatched:Number(d.adsWatched||0)+1});await PR_db.collection("earningTransactions").add({transactionId:"AD-"+Date.now().toString(36).toUpperCase(),type:"ad_reward",source:"monetag",userId:String(PR_currentUser.id),amount:adReward,beforeBalance:before,afterBalance:after,status:"completed",createdAt:firebase.firestore.FieldValue.serverTimestamp()});PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(d.totalIncome||0)+adReward;PR_currentUser.todayIncome=String(d.incomeDay||"")===day?Number(d.todayIncome||0)+adReward:adReward;PR_currentUser.incomeDay=day;PR_currentUser.adsWatched=Number(d.adsWatched||0)+1;PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;if(PR_currentUser.videoCountSincePopup>=50){PR_currentUser.videoCountSincePopup=0;setTimeout(()=>PR_video50Popup(),250);}if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,adReward,PR_currentUser.name||PR_currentUser.username||"User",Date.now().toString(),"ad");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",adReward);PR_updateUI();Swal.fire({title:"Ad Complete!",text:"৳"+adReward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
-    }catch(error){console.error("Monetag Error:",error);const msg=error.message||String(error);if(msg==="USER_NOT_FOUND")Swal.fire("Account Not Found","এই Telegram account-এর Firebase user পাওয়া যায়নি। App-টি Telegram Mini App-এর ভিতর থেকে খুলুন।","error");else if(msg==="FIREBASE_UNAVAILABLE")Swal.fire("Firebase Error","Firebase connection পাওয়া যাচ্ছে না।","error");else if(msg==="AD_SDK_NOT_READY")Swal.fire("Ad Load হয়নি","Monetag SDK এখনো load হয়নি। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।","warning");else Swal.fire("Ad Failed","Monetag ad শেষ হয়নি বা ad fill হয়নি। আবার চেষ্টা করুন।","error");}finally{PR_showMonetagAd.busy=false;}
+
+        if(PR_currentUser.referrerId){
+            await PR_applyTaskBonus(
+                PR_currentUser.referrerId,
+                reward,
+                PR_currentUser.name||PR_currentUser.username||"User",
+                Date.now().toString(),
+                "ad"
+            );
+        }
+
+        await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",reward);
+        PR_updateUI();
+
+        Swal.fire({
+            title:"Ad Complete!",
+            text:"৳"+reward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",
+            icon:"success",
+            timer:1800,
+            showConfirmButton:false
+        });
+
+    }catch(error){
+        console.error("Monetag / reward error:",error);
+        const msg=String(error.message||error);
+
+        if(msg==="USER_NOT_FOUND"){
+            Swal.fire("Account Not Found","এই Telegram account-এর Firebase user পাওয়া যায়নি।","error");
+        }else if(msg==="FIREBASE_UNAVAILABLE"){
+            Swal.fire("Firebase Error","Firebase connection পাওয়া যাচ্ছে না।","error");
+        }else if(msg==="AD_SDK_NOT_READY"){
+            Swal.fire("Ad Load হয়নি","Monetag SDK এখনো load হয়নি। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।","warning");
+        }else if(msg.includes("permission-denied")||msg.includes("PERMISSION_DENIED")){
+            Swal.fire("Balance Write Blocked","Ad দেখা হয়েছে, কিন্তু Firebase Security Rules balance update আটকেছে। Rules publish করতে হবে।","error");
+        }else{
+            Swal.fire("Ad Failed","Monetag SDK ad complete করেনি / no-fill দিয়েছে। SDK resolve না করলে reward দেওয়া যাবে না।","error");
+        }
+    }finally{
+        PR_showMonetagAd.busy=false;
+    }
 }
 
 function PR_video50Popup(){Swal.fire({title:"🎊 অভিনন্দন!",html:"আপনি ৫০টি ভিডিও দেখেছেন ❤️<br><br>আপনি কি আরও ভিডিও দেখা চালিয়ে যেতে আগ্রহী? 🤔",icon:"success",showCancelButton:true,confirmButtonText:"🟠 হ্যাঁ",cancelButtonText:"🔵 না"}).then(r=>{if(!r.isConfirmed)PR_goTab("prHome");});}
@@ -3252,73 +3678,144 @@ window.PR_transferBalance = async function(){
 async function PR_loadLeaderboard(period="daily"){
     const container=document.getElementById("prLeaderboardList");
     if(!container)return;
-    if(!PR_db){container.innerHTML="<div class='pr-leader-empty'>Firebase configure করা হয়নি।</div>";return;}
+
     try{
-        const snapshot=await PR_db.collection("users").get();
-        const users=[];
-        snapshot.forEach(doc=>{
-            const u=doc.data()||{}, id=String(doc.id);
-            const refs=Number(u.directRefCount??u.totalRef??0);
-            const score=period==="daily"?Number(u.todayIncome||0):Number(u.totalIncome||0);
-            if(refs>0 || score>0) users.push({id,...u,totalRef:refs,score});
-        });
-        // Also include the user snapshot in the file if Firebase is temporarily empty.
-        if(!users.length && Array.isArray(PR_IMPORTED_USER_DATA)){
-            PR_IMPORTED_USER_DATA.forEach(u=>{
-                const refs=Number(u.totalRef||0);
-                const score=period==="daily"?Number(u.todayIncome||0):Number(u.totalIncome||0);
-                if(refs>0 || score>0)users.push({...u,totalRef:refs,score});
+        let sourceUsers=[];
+
+        if(PR_db){
+            const snapshot=await PR_db.collection("users").get();
+            snapshot.forEach(doc=>{
+                const u=doc.data()||{};
+                sourceUsers.push({id:String(doc.id),...u});
             });
         }
-        users.sort((a,b)=>b.score-a.score || b.totalRef-a.totalRef || String(a.name||"").localeCompare(String(b.name||"")));
-        const top=users.slice(0,30);
-        if(!top.length){
-            container.innerHTML="<div class='pr-leader-empty'>এখনও leaderboard data নেই।</div>";
-            return;
+
+        // Merge supplied snapshot without overwriting live Firebase values.
+        const byId=new Map(sourceUsers.map(u=>[String(u.id),u]));
+        if(Array.isArray(PR_IMPORTED_USER_DATA)){
+            PR_IMPORTED_USER_DATA.forEach(u=>{
+                const id=String(u.id);
+                if(!byId.has(id))byId.set(id,{...u,id});
+            });
         }
-        const avatar=(u,cls)=>{
+
+        let users=[...byId.values()].map(u=>{
+            const date=String(u.incomeDay||"");
+            const score=period==="daily"
+                ? Number(u.todayIncome||0)
+                : period==="weekly"
+                    ? Number(u.totalIncome||0)
+                    : Number(u.totalIncome||0);
+            const refs=Number(u.directRefCount??u.totalRef??0);
+            return {...u,totalRef:refs,score};
+        }).filter(u=>Number(u.score||0)>0 || Number(u.totalRef||0)>0);
+
+        users.sort((a,b)=>
+            Number(b.score||0)-Number(a.score||0) ||
+            Number(b.totalRef||0)-Number(a.totalRef||0)
+        );
+
+        const top=users.slice(0,50);
+        const me=users.find(u =>
+            String(u.id)===String(PR_currentUser.id) ||
+            String(u.telegramId||"")===String(PR_currentUser.telegramId||"")
+        );
+
+        const escape=window.PR_escapeHtml||((s)=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])));
+
+        const avatar=(u,cls="pr-lb-avatar")=>{
             const photo=String(u.photoUrl||"").trim();
-            const initials=String(u.name||u.username||"U").trim().slice(0,2).toUpperCase()||"U";
+            const initial=String(u.name||u.username||"U").trim().slice(0,1).toUpperCase();
             return photo
-              ? `<img class="${cls}" src="${PR_escapeHtml(photo)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="${cls} pr-avatar-fallback" style="display:none">${PR_escapeHtml(initials)}</div>`
-              : `<div class="${cls} pr-avatar-fallback">${PR_escapeHtml(initials)}</div>`;
+                ? `<img class="${cls}" src="${escape(photo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls} pr-lb-fallback" style="display:none">${escape(initial)}</span>`
+                : `<span class="${cls} pr-lb-fallback">${escape(initial)}</span>`;
         };
-        const medal=["🥇","🥈","🥉"];
-        const place=["first","second","third"];
-        const top3=top.slice(0,3);
-        const podium=top3.map((u,i)=>`
-            <div class="pr-shot-podium ${place[i]}">
-                <div class="pr-shot-crown">${i===0?"👑":"♛"}</div>
-                <div class="pr-shot-rank">${medal[i]} TOP ${i+1}</div>
-                ${avatar(u,"pr-shot-avatar")}
-                <div class="pr-shot-name">${PR_escapeHtml(u.name||u.username||"User")}</div>
-                <div class="pr-shot-score">৳${Number(u.score||0).toFixed(2)}</div>
-                <div class="pr-shot-ref">${Number(u.totalRef||0)} Referral</div>
-            </div>`).join("");
-        const rows=top.slice(3).map((u,i)=>`
-            <div class="pr-shot-row">
-                <div class="pr-shot-row-rank">${i+4}</div>
-                ${avatar(u,"pr-shot-row-avatar")}
-                <div class="pr-shot-row-user">
-                    <b>${PR_escapeHtml(u.name||u.username||"User")}</b>
-                    ${u.username?`<small>@${PR_escapeHtml(String(u.username).replace(/^@/,""))}</small>`:""}
+
+        const badge=(u)=>{
+            const manual=Array.isArray(u.manualBadges)?u.manualBadges:[];
+            if(manual.length)return escape(String(manual[0]));
+            if(Number(u.totalRef||0)>=20)return "VIP";
+            if(Number(u.totalRef||0)>=10)return "PRO";
+            if(Number(u.totalRef||0)>=5)return "N7";
+            return "N7";
+        };
+
+        const flag=(u)=>{
+            const f=String(u.countryFlag||u.flag||"🇧🇩").trim();
+            return f||"🇧🇩";
+        };
+
+        const podiumData=[
+            top[1]||null,
+            top[0]||null,
+            top[2]||null
+        ];
+
+        const podium=podiumData.map((u,slot)=>{
+            if(!u)return `<div class="pr-lb-podium-card empty"></div>`;
+            const rank=slot===1?1:(slot===0?2:3);
+            const cls=rank===1?"p1":rank===2?"p2":"p3";
+            return `
+                <div class="pr-lb-podium-card ${cls}">
+                    <div class="pr-lb-crown">${rank===1?"♛":"♛"}</div>
+                    <div class="pr-lb-top-label">TOP ${rank}</div>
+                    ${avatar(u,"pr-lb-podium-avatar")}
+                    <div class="pr-lb-podium-name">${escape(u.name||u.username||"User")}</div>
+                    <div class="pr-lb-mini-badge">${escape(badge(u))}</div>
+                    <div class="pr-lb-podium-score">৳${Number(u.score||0).toFixed(0)} <span>🪙</span></div>
+                </div>`;
+        }).join("");
+
+        const rows=top.slice(3,30).map((u,i)=>`
+            <div class="pr-lb-row">
+                <div class="pr-lb-rank">${i+4}</div>
+                ${avatar(u)}
+                <div class="pr-lb-user">
+                    <div class="pr-lb-name">${escape(u.name||u.username||"User")}</div>
+                    <div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(u))}</span> <span>${flag(u)}</span></div>
                 </div>
-                <div class="pr-shot-row-score">৳${Number(u.score||0).toFixed(2)} 🪙</div>
+                <div class="pr-lb-score">${Number(u.score||0).toFixed(0)} <span>🪙</span></div>
             </div>`).join("");
+
+        let currentRow="";
+        if(me){
+            const rank=Math.max(1,users.findIndex(u=>String(u.id)===String(me.id))+1);
+            currentRow=`
+                <div class="pr-lb-current">
+                    <div class="pr-lb-current-rank">${rank>30?"30+":rank}</div>
+                    ${avatar(me,"pr-lb-current-avatar")}
+                    <div class="pr-lb-user">
+                        <div class="pr-lb-name">${escape(me.name||me.username||"You")}</div>
+                        <div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(me))}</span> <span>${flag(me)}</span></div>
+                    </div>
+                    <div class="pr-lb-score">${Number(me.score||0).toFixed(0)} <span>🪙</span></div>
+                </div>`;
+        }
+
         container.innerHTML=`
-            <div class="pr-shot-tabs">
-                <button class="${period==="daily"?"active":""}" onclick="PR_loadLeaderboard('daily')">Daily</button>
-                <button class="${period==="weekly"?"active":""}" onclick="PR_loadLeaderboard('weekly')">Weekly</button>
-                <button class="${period==="monthly"?"active":""}" onclick="PR_loadLeaderboard('monthly')">Monthly</button>
-                <span>Today ↗</span>
-            </div>
-            <div class="pr-shot-podium">${podium}</div>
-            <div class="pr-shot-list">${rows}</div>`;
+            <div class="pr-lb-shell">
+                <div class="pr-lb-tabs">
+                    <button class="${period==="daily"?"active":""}" onclick="PR_loadLeaderboard('daily')">Daily</button>
+                    <button class="${period==="weekly"?"active":""}" onclick="PR_loadLeaderboard('weekly')">Weekly</button>
+                    <button class="${period==="monthly"?"active":""}" onclick="PR_loadLeaderboard('monthly')">Monthly</button>
+                    <span>Today ↗</span>
+                </div>
+
+                <div class="pr-lb-hero">
+                    <div class="pr-lb-wings">〰〰〰♛〰〰〰</div>
+                    <div class="pr-lb-podium">${podium}</div>
+                    <div class="pr-lb-ornament">♛</div>
+                </div>
+
+                <div class="pr-lb-list">${rows || `<div class="pr-leader-empty">Leaderboard data নেই।</div>`}</div>
+                ${currentRow}
+            </div>`;
     }catch(error){
         console.error("Leaderboard Error:",error);
         container.innerHTML="<div class='pr-leader-empty'>Leaderboard load করা যায়নি।</div>";
     }
 }
+
 /* =========================================================
    START
    ========================================================= */
@@ -3328,6 +3825,7 @@ try{PR_applyTheme(localStorage.getItem("pr_theme")||"royal");}catch(e){PR_applyT
 PR_renderTasks();
 PR_renderBanners();
 PR_initUser();
+setTimeout(()=>PR_retryPendingRewards().catch(()=>{}),2500);
 
 // Initial fallback data is shown immediately; Firebase listeners replace it when connected.
 PR_renderFallbackActivities();
