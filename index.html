@@ -12,7 +12,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <!-- MONETAG -->
-<script data-cfasync='false' src='//libtl.com/sdk.js' data-zone='11697562' data-sdk='show_11697562'></script>
+<script data-cfasync='false' src='https://libtl.com/sdk.js' data-zone='11697562' data-sdk='show_11697562'></script>
 
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -1165,8 +1165,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         </div>
 
         <div class="pr-home-grid">
-            <button class="pr-quick" onclick="PR_goTab('prTask')"><i class="fas fa-list-check"></i><b>টাস্ক</b><span>Earn by completing tasks</span></button>
-            <button class="pr-quick" onclick="PR_goTab('prTask')"><i class="fas fa-play-circle"></i><b>এডস</b><span>Watch ads & earn</span></button>
+            <button class="pr-quick" onclick="PR_goTab('prTask')"><i class="fas fa-bolt"></i><b>Earn</b><span>Ads দেখুন ও Task করুন</span></button>
             <button class="pr-quick" onclick="PR_goTab('prReferral')"><i class="fas fa-users"></i><b>রেফার</b><span>Invite friends & earn</span></button>
             <button class="pr-quick" onclick="PR_goTab('prLeaderboard')"><i class="fas fa-trophy"></i><b>লিডারবোর্ড</b><span>Top referrers</span></button>
         </div>
@@ -1321,7 +1320,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         </div>
         <div class="pr-card pr-profile-card">
             <img id="prProfileAvatar" class="pr-profile-large" alt="Telegram Profile Photo">
-            <div style="color:var(--muted);font-size:12px;margin-bottom:10px"><i class="fab fa-telegram"></i> Telegram Profile Photo</div>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:10px"><i class="fab fa-telegram"></i> Telegram Profile Photo</div><div id="prFirebaseStatus" style="color:#ffcf70;font-size:11px;margin:4px 0 8px">Firebase account loading...</div>
             <h3 id="prProfileName" style="margin:4px 0">Guest User</h3>
             <div id="prProfileUsername" style="color:var(--muted);font-size:13px">@username</div>
 
@@ -1534,7 +1533,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
          ===================================================== -->
     <div class="pr-bottom-nav">
         <div class="pr-nav-item active" onclick="PR_switchTab('prHome',this)"><i class="fas fa-house"></i>Home</div>
-        <div class="pr-nav-item" onclick="PR_switchTab('prTask',this)"><i class="fas fa-list-check"></i>Tasks</div>
+        <div class="pr-nav-item" onclick="PR_switchTab('prTask',this)"><i class="fas fa-bolt"></i>Earn</div>
         <div class="pr-nav-item" onclick="PR_switchTab('prLeaderboard',this)"><i class="fas fa-trophy"></i>Leaderboard</div>
         <div class="pr-nav-item" onclick="PR_switchTab('prReferral',this)"><i class="fas fa-users"></i>Refer</div>
         <div class="pr-nav-item" onclick="PR_switchTab('prProfile',this)"><i class="fas fa-user"></i>Profile</div>
@@ -1810,9 +1809,10 @@ function PR_applyTheme(theme){
     return t;
 }
 window.PR_applyTheme=PR_applyTheme;
-window.PR_openThemeModal=function(){PR_applyTheme((()=>{try{return localStorage.getItem("pr_theme")||"royal"}catch(e){return "royal"}})());const m=document.getElementById("prThemeModal");if(m)m.classList.add("active");};
-window.PR_closeThemeModal=function(){const m=document.getElementById("prThemeModal");if(m)m.classList.remove("active");};
+window.PR_openThemeModal=function(){PR_applyTheme((()=>{try{return localStorage.getItem("pr_theme")||"royal"}catch(e){return "royal"}})());const m=document.getElementById("prThemeModal");if(m)m.classList.add("open");};
+window.PR_closeThemeModal=function(){const m=document.getElementById("prThemeModal");if(m)m.classList.remove("open");};
 window.PR_setTheme=function(theme){PR_applyTheme(theme);PR_closeThemeModal();};
+try{PR_applyTheme(localStorage.getItem("pr_theme")||"royal");}catch(e){PR_applyTheme("royal");}
 
 /* =========================================================
    USER INITIALIZE
@@ -1845,6 +1845,7 @@ function PR_initUser(){
         PR_currentUser.id =
         String(tgUser.id);
         PR_currentUser.telegramId = String(tgUser.id);
+        try{localStorage.setItem("pr_last_telegram_id",String(tgUser.id));}catch(e){}
 
         PR_currentUser.username =
         String(tgUser.username || "").toLowerCase();
@@ -2003,7 +2004,7 @@ function PR_loadLocalUser(){
     PR_updateUI();
     PR_setupAdminUI();
     PR_renderBanners();
-    PR_renderFallbackActivities;
+    PR_renderFallbackActivities();
 
 }
 
@@ -2018,30 +2019,31 @@ async function PR_loadUser(){
         const users=PR_db.collection("users");
         const telegramId=String(PR_currentUser.telegramId || PR_currentUser.id || "").trim();
         const username=String(PR_currentUser.username || "").replace(/^@/,"").trim().toLowerCase();
-        const candidates=[],seen=new Set();
-        const add=async d=>{if(d&&d.exists&&!seen.has(d.id)){seen.add(d.id);candidates.push(d);}};
-        await add(await users.doc(telegramId).get());
-        if(telegramId){const q=await users.where("telegramId","==",telegramId).limit(20).get();q.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);candidates.push(d);}});}
-        if(username){const q=await users.where("username","==",username).limit(20).get();q.forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);candidates.push(d);}});}
-        const score=d=>{const x=d.data()||{};return Number(x.balance||0)+Number(x.totalIncome||0)+Number(x.totalRef||0)*2+Number(x.directRefCount||0)*2+Number(x.adsWatched||0)+Number(x.completedTasks?.length||0)+Number(x.totalWithdrawn||0)+(x.referrerId?5:0)+(x.createdAt?1:0);};
-        let doc=candidates.sort((a,b)=>score(b)-score(a))[0]||null;
+        let doc=null;
+        if(telegramId){ const exact=await users.doc(telegramId).get(); if(exact.exists) doc=exact; }
+        const findBest=(snap)=>{
+            if(snap.empty) return null; const docs=snap.docs.slice();
+            const score=d=>{const x=d.data()||{};return Number(x.balance||0)*100+Number(x.totalIncome||0)*10+Number(x.totalRef||0)*5+Number(x.directRefCount||0)*5+Number(x.adsWatched||0)+Number(Array.isArray(x.completedTasks)?x.completedTasks.length:0)+Number(x.totalWithdrawn||0)+(x.referrerId?20:0)+(x.telegramId?10:0);};
+            docs.sort((a,b)=>score(b)-score(a)); return docs[0];
+        };
+        if(!doc&&telegramId)doc=findBest(await users.where("telegramId","==",telegramId).limit(50).get());
+        if(!doc&&telegramId)doc=findBest(await users.where("userId","==",telegramId).limit(50).get());
+        if(!doc&&telegramId)doc=findBest(await users.where("id","==",telegramId).limit(50).get());
+        if(!doc&&username)doc=findBest(await users.where("username","==",username).limit(50).get());
         let ref=doc?doc.ref:users.doc(telegramId);
         if(!doc){
-            const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
-            let resolvedReferrerId="",resolvedReferrerName="";
-            if(start&&start!==telegramId.toLowerCase()&&start!==username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){resolvedReferrerId=String(r.id);resolvedReferrerName=r.data()?.name||"User";}}catch(e){}}
+            const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase(); let resolvedReferrerId="",resolvedReferrerName="";
+            if(start&&start!==telegramId.toLowerCase()&&start!==username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){resolvedReferrerId=String(r.id);resolvedReferrerName=r.data()?.name||"User";}}catch(e){console.error("Referrer resolve",e);}}
             const u={id:telegramId,telegramId,name:PR_currentUser.name,username,photoUrl:PR_currentUser.photoUrl||"",balance:0,totalRef:0,directRefCount:0,referralBonusTotal:0,referrerId:resolvedReferrerId,referrerName:resolvedReferrerName,totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,taskBonusTotal:0,joinDate:new Date().toISOString(),completedTasks:[],accountActivated:false,activeDirectReferrals:0,level1Commission:0,level2Commission:0,level3Commission:0,videoCountSincePopup:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
-            ref=users.doc(telegramId);await ref.set(u);doc=await ref.get();
-            if(resolvedReferrerId){await PR_applyReferralCommission(resolvedReferrerId,telegramId);await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");}
+            ref=users.doc(telegramId); await ref.set(u); doc=await ref.get(); if(resolvedReferrerId){await PR_applyReferralCommission(resolvedReferrerId,telegramId);await PR_addNotification(resolvedReferrerId,"নতুন Referral","আপনার referral-এর মাধ্যমে নতুন user যোগ হয়েছে।");}
         }
         const data=doc.data()||{}; PR_userDocRef=ref;
-        PR_currentUser={...PR_currentUser,...{telegramId:String(data.telegramId||telegramId),id:String(doc.id),name:data.name||PR_currentUser.name||"User",username:String(data.username||username||"").replace(/^@/,"").toLowerCase(),balance:Number(data.balance??0),totalRef:Number(data.totalRef??0),directRefCount:Number(data.directRefCount??0),referralBonusTotal:Number(data.referralBonusTotal??0),referrerId:String(data.referrerId||""),referrerName:data.referrerName||"",totalIncome:Number(data.totalIncome??0),todayIncome:Number(data.todayIncome??0),incomeDay:data.incomeDay||"",adsWatched:Number(data.adsWatched??0),totalWithdrawn:Number(data.totalWithdrawn??0),taskBonusTotal:Number(data.taskBonusTotal??0),joinDate:data.joinDate||data.createdAt||"",completedTasks:Array.isArray(data.completedTasks)?data.completedTasks:[],accountActivated:!!data.accountActivated,activeDirectReferrals:Number(data.activeDirectReferrals??0),level1Commission:Number(data.level1Commission??0),level2Commission:Number(data.level2Commission??0),level3Commission:Number(data.level3Commission??0),videoCountSincePopup:Number(data.videoCountSincePopup??0)}};
+        PR_currentUser={...PR_currentUser,telegramId:String(data.telegramId||telegramId),id:String(doc.id),name:data.name||PR_currentUser.name||"User",username:String(data.username||username||"").replace(/^@/,"").toLowerCase(),balance:Number(data.balance??0),totalRef:Number(data.totalRef??0),directRefCount:Number(data.directRefCount??0),referralBonusTotal:Number(data.referralBonusTotal??0),referrerId:String(data.referrerId||""),referrerName:data.referrerName||"",totalIncome:Number(data.totalIncome??0),todayIncome:Number(data.todayIncome??0),incomeDay:data.incomeDay||"",adsWatched:Number(data.adsWatched??0),totalWithdrawn:Number(data.totalWithdrawn??0),taskBonusTotal:Number(data.taskBonusTotal??0),joinDate:data.joinDate||data.createdAt||"",completedTasks:Array.isArray(data.completedTasks)?data.completedTasks:[],accountActivated:!!data.accountActivated,activeDirectReferrals:Number(data.activeDirectReferrals??0),level1Commission:Number(data.level1Commission??0),level2Commission:Number(data.level2Commission??0),level3Commission:Number(data.level3Commission??0),videoCountSincePopup:Number(data.videoCountSincePopup??0)};
         const ident={};if(!data.telegramId&&telegramId)ident.telegramId=telegramId;if(!data.username&&username)ident.username=username;if(Object.keys(ident).length)ref.update(ident).catch(()=>{});
         const live=String(PR_tg?.initDataUnsafe?.user?.photo_url||"").trim();if(live&&live!==String(data.photoUrl||""))ref.update({photoUrl:live}).catch(()=>{});PR_currentUser.photoUrl=live||data.photoUrl||PR_currentUser.photoUrl||"";
-        // Never attach a new referral to a user who already has one.
         const start=String(PR_tg?.initDataUnsafe?.start_param||"").replace(/^ref_/i,"").replace(/^@/,"").trim().toLowerCase();
-        if(!PR_currentUser.referrerId&&start&&start!==String(PR_currentUser.id).toLowerCase()&&start!==PR_currentUser.username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){PR_currentUser.referrerId=String(r.id);PR_currentUser.referrerName=r.data()?.name||"User";await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);}}catch(e){}}
-        PR_createReferralLink();
+        if(!PR_currentUser.referrerId&&start&&start!==String(PR_currentUser.id).toLowerCase()&&start!==PR_currentUser.username){try{let r=await users.doc(start).get();if(!r.exists){const q=await users.where("username","==",start).limit(1).get();if(!q.empty)r=q.docs[0];}if(r?.exists){PR_currentUser.referrerId=String(r.id);PR_currentUser.referrerName=r.data().name||"User";await ref.update({referrerId:PR_currentUser.referrerId,referrerName:PR_currentUser.referrerName});await PR_applyReferralCommission(PR_currentUser.referrerId,PR_currentUser.id);}}catch(e){console.error("Attach referral",e);}}
+        PR_createReferralLink(); const status=document.getElementById("prFirebaseStatus");if(status)status.innerText=`Firebase account: ${PR_currentUser.id} • Balance ৳${Number(PR_currentUser.balance||0).toFixed(2)}`;
     }catch(error){console.error("Load User:",error);const box=document.getElementById("prFirebaseStatus");if(box)box.innerText="Firebase error: "+(error.message||error);}
     PR_updateUI();PR_setupAdminUI();PR_renderTasks();PR_loadNotifications();PR_startNotificationListener();PR_loadLiveActivities();PR_startActivityListener();PR_loadReferrerName();PR_loadDirectReferrals();PR_checkActivation();PR_showReferralLevel(1);PR_loadAdminBanners();PR_loadApprovedTasks();if(PR_isAdmin())PR_loadPendingAdminTasks();if(PR_isAdmin())PR_loadAdminBalanceHistory();if(PR_isAdmin())PR_loadAdminWithdrawals();PR_renderBadges();PR_loadFinancialHistory();
 }
@@ -2450,7 +2452,7 @@ async function PR_loadDirectReferrals(){
     const list=document.getElementById("prDirectReferralList");if(!list||!PR_db||!PR_currentUser.id)return;
     try{const levels=await PR_getReferralLevels(),direct=levels[0]||[];PR_currentUser.directRefCount=direct.length;PR_currentUser.totalRef=levels.reduce((n,a)=>n+a.length,0);const rr=PR_getCurrentUserRef();if(rr)rr.update({directRefCount:direct.length,totalRef:PR_currentUser.totalRef}).catch(()=>{});if(!direct.length){list.innerHTML='<div class="pr-direct-empty">এখনও কোনো direct referral নেই।</div>';return;}list.innerHTML=direct.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L1 5%</div></div>`}).join("");PR_updateUI();}catch(e){console.error("Direct referral list:",e);list.innerHTML='<div class="pr-direct-empty">Referral data load করা যায়নি।</div>';}}
 async function PR_getReferralLevels(){
-    if(!PR_db||!PR_currentUser.id)return[[],[],[]];const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"").trim();if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let frontier=[String(PR_currentUser.id),String(PR_currentUser.telegramId||"")];if(PR_currentUser.username)frontier.push("u:"+String(PR_currentUser.username).replace(/^@/,"").toLowerCase());for(let i=0;i<3;i++){const next=[];for(const key of frontier){for(const u of(byRef.get(key)||[])){if(seen.has(u.id))continue;seen.add(u.id);levels[i].push(u);next.push(u.id);if(u.telegramId)next.push(String(u.telegramId));if(u.username)next.push("u:"+String(u.username).replace(/^@/,"").toLowerCase());}}frontier=[...new Set(next)];}return levels;}
+    if(!PR_db||!PR_currentUser.id)return[[],[],[]];const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"").trim();if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let frontier=[String(PR_currentUser.id),String(PR_currentUser.telegramId||"")];if(PR_currentUser.username){frontier.push("u:"+String(PR_currentUser.username).replace(/^@/,"").toLowerCase());frontier.push(String(PR_currentUser.username).replace(/^@/,"").toLowerCase());}for(let i=0;i<3;i++){const next=[];for(const key of frontier){for(const u of(byRef.get(key)||[])){if(seen.has(u.id))continue;seen.add(u.id);levels[i].push(u);next.push(u.id);if(u.telegramId)next.push(String(u.telegramId));if(u.username){next.push("u:"+String(u.username).replace(/^@/,"").toLowerCase());next.push(String(u.username).replace(/^@/,"").toLowerCase());}}}frontier=[...new Set(next)];}return levels;}
 async function PR_checkActivation(){
     if(!PR_db||!PR_currentUser.id)return false;
     try{
@@ -2517,17 +2519,22 @@ function PR_renderTasks(){
    ========================================================= */
 
 window.PR_joinTask=async function(taskId,link,taskRewardArg,isPaid){
-    const taskReward=Number(taskRewardArg||PR_SETTINGS.joinReward||0);
-    if((PR_currentUser.completedTasks||[]).map(String).includes(String(taskId)))return Swal.fire("Already Completed","এই task আপনি আগে complete করেছেন।","info");
-    window.open(link,"_blank");const result=await Swal.fire({title:"Task Complete?",text:"Task সম্পন্ন হলে reward আপনার balance-এ যোগ হবে।",icon:"question",showCancelButton:true,confirmButtonText:"Confirm",cancelButtonText:"Cancel"});if(!result.isConfirmed)return;if(!PR_db)return Swal.fire("Firebase Error","Firebase configure করা হয়নি।","error");
-    try{const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const txId="TASK-"+String(taskId)+"-"+String(PR_currentUser.id);let applied=false,before=0,after=0;await PR_db.runTransaction(async tx=>{const snap=await tx.get(userRef);if(!snap.exists)throw new Error("USER_NOT_FOUND");const et=await tx.get(PR_db.collection("earningTransactions").doc(txId));if(et.exists)return;const d=snap.data()||{},done=Array.isArray(d.completedTasks)?d.completedTasks:[];if(done.map(String).includes(String(taskId)))return;before=Number(d.balance||0);after=Number((before+taskReward).toFixed(2));const day=new Date().toISOString().slice(0,10);tx.update(userRef,{balance:after,totalIncome:Number(d.totalIncome||0)+taskReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward,incomeDay:day,completedTasks:firebase.firestore.FieldValue.arrayUnion(String(taskId))});tx.set(PR_db.collection("earningTransactions").doc(txId),{transactionId:txId,type:"task_reward",source:"task",userId:String(PR_currentUser.id),amount:taskReward,beforeBalance:before,afterBalance:after,status:"completed",reference:String(taskId),createdAt:firebase.firestore.FieldValue.serverTimestamp()});applied=true;});if(!applied)return Swal.fire("Already Completed","এই task reward আগেই দেওয়া হয়েছে।","info");if(isPaid)PR_db.collection("tasks").doc(String(taskId)).update({completedCount:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+taskReward;PR_currentUser.todayIncome=String(PR_currentUser.incomeDay||"")===new Date().toISOString().slice(0,10)?Number(PR_currentUser.todayIncome||0)+taskReward:taskReward;PR_currentUser.incomeDay=new Date().toISOString().slice(0,10);if(!Array.isArray(PR_currentUser.completedTasks))PR_currentUser.completedTasks=[];PR_currentUser.completedTasks.push(String(taskId));if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,taskReward,PR_currentUser.name||PR_currentUser.username||"User",txId,"task");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"টাস্ক করেছেন",taskReward);PR_updateUI();PR_renderTasks();Swal.fire({title:"সফল!",text:"৳"+taskReward.toFixed(2)+" reward আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});}catch(e){console.error("Task complete",e);Swal.fire("Error","Task reward যোগ করা যায়নি। Firebase permission/network check করুন।","error");}};
+    const taskReward=Number(taskRewardArg||PR_SETTINGS.joinReward||0); if(taskReward<=0)return;
+    window.open(link,"_blank"); const result=await Swal.fire({title:"Task Complete?",text:"Task সম্পন্ন হলে reward আপনার balance-এ যোগ হবে।",icon:"question",showCancelButton:true,confirmButtonText:"Confirm",cancelButtonText:"Cancel"}); if(!result.isConfirmed)return;
+    try{const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const snap=await userRef.get();if(!snap.exists)throw new Error("USER_NOT_FOUND");const d=snap.data()||{},before=Number(d.balance||0),day=new Date().toISOString().slice(0,10),after=Number((before+taskReward).toFixed(2));
+        await userRef.update({balance:after,totalIncome:Number(d.totalIncome||0)+taskReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward,incomeDay:day,completedTasks:firebase.firestore.FieldValue.arrayUnion(String(taskId))});
+        if(isPaid)PR_db.collection("tasks").doc(String(taskId)).update({completedCount:firebase.firestore.FieldValue.increment(1)}).catch(()=>{});
+        PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(d.totalIncome||0)+taskReward;PR_currentUser.todayIncome=String(d.incomeDay||"")===day?Number(d.todayIncome||0)+taskReward:taskReward;PR_currentUser.incomeDay=day;if(!Array.isArray(PR_currentUser.completedTasks))PR_currentUser.completedTasks=[];PR_currentUser.completedTasks.push(String(taskId));
+        if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,taskReward,PR_currentUser.name||PR_currentUser.username||"User",Date.now().toString(),"task");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"টাস্ক করেছেন",taskReward);PR_updateUI();PR_renderTasks();Swal.fire({title:"সফল!",text:"৳"+taskReward.toFixed(2)+" reward আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
+    }catch(e){console.error("Task complete",e);Swal.fire("Error","Task reward যোগ করা যায়নি। Firebase connection/Rules check করুন।","error");}
+};
 
 /* =========================================================
    5% TASK BONUS TO DIRECT REFERRER
    ========================================================= */
 async function PR_applyTaskBonus(referrerId,taskReward,referredName,earningId="",sourceType="earning"){
-    if(!PR_db||!referrerId||!taskReward)return;let current=String(referrerId),seen=new Set(),level=1;const rates=[.05,.02,.01];
-    while(current&&level<=3&&!seen.has(current)){seen.add(current);const ref=PR_db.collection("users").doc(current),commissionId=earningId?`${String(earningId)}-L${level}`:`LEGACY-${Date.now()}-${current}-L${level}`,cr=PR_db.collection("commissionTransactions").doc(commissionId);let data=null,bonus=0,applied=false;try{await PR_db.runTransaction(async tx=>{const snap=await tx.get(ref);if(!snap.exists)return;data=snap.data()||{};const old=await tx.get(cr);if(old.exists)return;bonus=Number((Number(taskReward)*rates[level-1]).toFixed(2));if(bonus<=0)return;const before=Number(data.balance||0),after=Number((before+bonus).toFixed(2)),day=new Date().toISOString().slice(0,10);tx.update(ref,{balance:after,totalIncome:Number(data.totalIncome||0)+bonus,todayIncome:String(data.incomeDay||"")===day?Number(data.todayIncome||0)+bonus:bonus,incomeDay:day,["level"+level+"Commission"]:firebase.firestore.FieldValue.increment(bonus),taskBonusTotal:firebase.firestore.FieldValue.increment(bonus)});tx.set(cr,{transactionId:commissionId,type:`level_${level}_commission`,source:sourceType,userId:current,amount:bonus,beforeBalance:before,afterBalance:after,status:"completed",reference:String(earningId||referredName||"earning"),earningUserId:String(PR_currentUser.id),level,rate:rates[level-1],createdAt:firebase.firestore.FieldValue.serverTimestamp()});applied=true;});}catch(e){console.error("Commission level "+level,e);break;}if(data&&applied&&bonus>0){await PR_addNotification(current,`Level ${level} Commission`,`Level ${level} (${rates[level-1]*100}%) কমিশন হিসেবে ৳${bonus.toFixed(2)} পেয়েছেন।`);await PR_addActivity(data.username||data.name,`Level ${level} commission পেয়েছেন`,bonus);}current=String(data?.referrerId||"");level++;}
+    if(!PR_db||!referrerId||!taskReward)return; let current=String(referrerId),seen=new Set(),level=1;const rates=[.05,.02,.01];
+    while(current&&level<=3&&!seen.has(current)){seen.add(current);const ref=PR_db.collection("users").doc(current);let data=null,bonus=0;try{await PR_db.runTransaction(async tx=>{const snap=await tx.get(ref);if(!snap.exists)return;data=snap.data()||{};bonus=Number((Number(taskReward)*rates[level-1]).toFixed(2));if(bonus>0){const before=Number(data.balance||0),after=Number((before+bonus).toFixed(2)),day=new Date().toISOString().slice(0,10);tx.update(ref,{balance:after,totalIncome:Number(data.totalIncome||0)+bonus,todayIncome:String(data.incomeDay||"")===day?Number(data.todayIncome||0)+bonus:bonus,incomeDay:day,["level"+level+"Commission"]:firebase.firestore.FieldValue.increment(bonus),taskBonusTotal:firebase.firestore.FieldValue.increment(bonus)});tx.set(PR_db.collection("commissionTransactions").doc("C-"+Date.now().toString(36)+"-"+level+"-"+Math.random().toString(36).slice(2,7)),{type:`level_${level}_commission`,source:sourceType,userId:current,amount:bonus,beforeBalance:before,afterBalance:after,status:"completed",reference:String(earningId||referredName||"earning"),earningUserId:String(PR_currentUser.id),level,rate:rates[level-1],createdAt:firebase.firestore.FieldValue.serverTimestamp()});}});}catch(e){console.error("Commission level "+level,e);break;}if(data&&bonus>0){await PR_addNotification(current,`Level ${level} Commission`,`Level ${level} (${rates[level-1]*100}%) কমিশন হিসেবে ৳${bonus.toFixed(2)} পেয়েছেন।`);await PR_addActivity(data.username||data.name,`Level ${level} commission পেয়েছেন`,bonus);}current=String(data?.referrerId||"");level++;}
 }
 
 /* =========================================================
@@ -2691,7 +2698,7 @@ window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const r
    ========================================================= */
 
 window.PR_waitForMonetag =
-function(timeoutMs = 12000){
+function(timeoutMs = 20000){
     return new Promise(resolve => {
         if(typeof window.show_11697562 === "function"){ resolve(true); return; }
         const started=Date.now();
@@ -2713,7 +2720,7 @@ async function(){
         return PR_showMonetagAd();
     }
     const isTelegram=!!(window.Telegram && window.Telegram.WebApp);
-    const ready=await PR_waitForMonetag(12000);
+    const ready=await PR_waitForMonetag(20000);
     if(!ready){
         Swal.fire({
             title:"Ad Load হয়নি",
@@ -2728,76 +2735,9 @@ async function(){
 };
 
 async function PR_showMonetagAd(){
-    if(PR_showMonetagAd.busy) return;
-    PR_showMonetagAd.busy=true;
-    try{
-        await window.show_11697562();
-        if(!PR_db) throw new Error("FIREBASE_UNAVAILABLE");
-
-        const userRef=PR_getCurrentUserRef();
-        const adReward=Number(PR_SETTINGS.adReward||0);
-        const adTxId="AD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,8).toUpperCase();
-
-        await PR_db.runTransaction(async(transaction)=>{
-            const snap=await transaction.get(userRef);
-            if(!snap.exists) throw new Error("USER_NOT_FOUND");
-            const d=snap.data()||{};
-            const before=Number(d.balance||0);
-            const after=Number((before+adReward).toFixed(2));
-            const today=new Date().toISOString().slice(0,10);
-            const todayIncome=String(d.incomeDay||"")===today
-                ? Number(d.todayIncome||0)+adReward
-                : adReward;
-            transaction.update(userRef,{
-                balance:after,
-                totalIncome:Number(d.totalIncome||0)+adReward,
-                todayIncome,
-                adsWatched:Number(d.adsWatched||0)+1,
-                incomeDay:today
-            });
-            transaction.set(PR_db.collection("earningTransactions").doc(adTxId),{
-                transactionId:adTxId,type:"ad_reward",source:"monetag",userId:String(PR_currentUser.id),
-                amount:adReward,beforeBalance:before,afterBalance:after,status:"completed",
-                createdAt:firebase.firestore.FieldValue.serverTimestamp()
-            });
-        });
-
-        PR_currentUser.balance=Number((Number(PR_currentUser.balance||0)+adReward).toFixed(2));
-        PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+adReward;
-        PR_currentUser.todayIncome=Number(PR_currentUser.todayIncome||0)+adReward;
-        PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1;
-        PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;
-
-        if(PR_currentUser.videoCountSincePopup>=50){
-            PR_currentUser.videoCountSincePopup=0;
-            setTimeout(()=>PR_video50Popup(),250);
-        }
-
-        // 3-level commission: 5% / 2% / 1%, only once per earning transaction.
-        if(PR_currentUser.referrerId){
-            await PR_applyTaskBonus(
-                PR_currentUser.referrerId,
-                adReward,
-                PR_currentUser.name||PR_currentUser.username||"User",
-                adTxId,
-                "ad"
-            );
-        }
-
-        await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",adReward);
-        PR_updateUI();
-
-        Swal.fire({
-            title:"Ad Complete!",
-            text:"৳"+adReward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",
-            icon:"success",timer:1800,showConfirmButton:false
-        });
-    }catch(error){
-        console.error("Monetag Error:",error);
-        Swal.fire("Ad Failed","ভিডিও/Ad দেখা সম্পন্ন হয়নি। আবার চেষ্টা করুন।","error");
-    }finally{
-        PR_showMonetagAd.busy=false;
-    }
+    if(PR_showMonetagAd.busy)return;PR_showMonetagAd.busy=true;
+    try{if(typeof window.show_11697562!=="function")throw new Error("AD_SDK_NOT_READY");await window.show_11697562();if(!PR_db)throw new Error("FIREBASE_UNAVAILABLE");const userRef=PR_getCurrentUserRef();if(!userRef)throw new Error("USER_NOT_FOUND");const snap=await userRef.get();if(!snap.exists)throw new Error("USER_NOT_FOUND");const d=snap.data()||{},adReward=Number(PR_SETTINGS.adReward||0),before=Number(d.balance||0),after=Number((before+adReward).toFixed(2)),day=new Date().toISOString().slice(0,10);await userRef.update({balance:after,totalIncome:Number(d.totalIncome||0)+adReward,todayIncome:String(d.incomeDay||"")===day?Number(d.todayIncome||0)+adReward:adReward,incomeDay:day,adsWatched:Number(d.adsWatched||0)+1});await PR_db.collection("earningTransactions").add({transactionId:"AD-"+Date.now().toString(36).toUpperCase(),type:"ad_reward",source:"monetag",userId:String(PR_currentUser.id),amount:adReward,beforeBalance:before,afterBalance:after,status:"completed",createdAt:firebase.firestore.FieldValue.serverTimestamp()});PR_currentUser.balance=after;PR_currentUser.totalIncome=Number(d.totalIncome||0)+adReward;PR_currentUser.todayIncome=String(d.incomeDay||"")===day?Number(d.todayIncome||0)+adReward:adReward;PR_currentUser.incomeDay=day;PR_currentUser.adsWatched=Number(d.adsWatched||0)+1;PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;if(PR_currentUser.videoCountSincePopup>=50){PR_currentUser.videoCountSincePopup=0;setTimeout(()=>PR_video50Popup(),250);}if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,adReward,PR_currentUser.name||PR_currentUser.username||"User",Date.now().toString(),"ad");await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",adReward);PR_updateUI();Swal.fire({title:"Ad Complete!",text:"৳"+adReward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1800,showConfirmButton:false});
+    }catch(error){console.error("Monetag Error:",error);const msg=error.message||String(error);if(msg==="USER_NOT_FOUND")Swal.fire("Account Not Found","এই Telegram account-এর Firebase user পাওয়া যায়নি। App-টি Telegram Mini App-এর ভিতর থেকে খুলুন।","error");else if(msg==="FIREBASE_UNAVAILABLE")Swal.fire("Firebase Error","Firebase connection পাওয়া যাচ্ছে না।","error");else if(msg==="AD_SDK_NOT_READY")Swal.fire("Ad Load হয়নি","Monetag SDK এখনো load হয়নি। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।","warning");else Swal.fire("Ad Failed","Monetag ad শেষ হয়নি বা ad fill হয়নি। আবার চেষ্টা করুন।","error");}finally{PR_showMonetagAd.busy=false;}
 }
 
 function PR_video50Popup(){Swal.fire({title:"🎊 অভিনন্দন!",html:"আপনি ৫০টি ভিডিও দেখেছেন ❤️<br><br>আপনি কি আরও ভিডিও দেখা চালিয়ে যেতে আগ্রহী? 🤔",icon:"success",showCancelButton:true,confirmButtonText:"🟠 হ্যাঁ",cancelButtonText:"🔵 না"}).then(r=>{if(!r.isConfirmed)PR_goTab("prHome");});}
@@ -3334,6 +3274,7 @@ async function PR_loadLeaderboard(){
    ========================================================= */
 
 PR_applyTheme((()=>{try{return localStorage.getItem("pr_theme")||"royal"}catch(e){return "royal"}})());
+try{PR_applyTheme(localStorage.getItem("pr_theme")||"royal");}catch(e){PR_applyTheme("royal");}
 PR_renderTasks();
 PR_renderBanners();
 PR_initUser();
