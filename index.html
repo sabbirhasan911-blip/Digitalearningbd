@@ -1081,6 +1081,27 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   #premiumRewardsApp .pr-task .pr-btn{margin-left:auto;}
 }
 
+
+/* =========================================================
+   THEME SYSTEM + ADMIN BALANCE CONTROL
+   ========================================================= */
+#premiumRewardsApp.pr-theme-ocean{--primary:#00b4d8;--primary2:#90e0ef;--bg:#06131a;--card:rgba(10,34,45,.9)}
+#premiumRewardsApp.pr-theme-emerald{--primary:#00b894;--primary2:#55efc4;--bg:#061511;--card:rgba(10,38,31,.9)}
+#premiumRewardsApp.pr-theme-sunset{--primary:#ff7a00;--primary2:#ffb347;--bg:#160b05;--card:rgba(42,24,15,.9)}
+#premiumRewardsApp.pr-theme-royal{--primary:#6c5ce7;--primary2:#a29bfe;--bg:#0b0b14;--card:rgba(25,25,40,.88)}
+.pr-theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}
+.pr-theme-option{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:11px;background:rgba(255,255,255,.04);color:#fff;cursor:pointer;font-weight:700}
+.pr-theme-option.active{background:linear-gradient(145deg,#ffb347,#ff7a00)!important;color:#111!important;border-color:#ff9f1c}
+.pr-balance-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pr-admin-balance-card{border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;background:rgba(255,255,255,.035)}
+.pr-admin-balance-card h3{margin:0 0 8px}
+.pr-admin-balance-card.add{border-color:rgba(46,213,115,.25)}
+.pr-admin-balance-card.remove{border-color:rgba(255,71,87,.25)}
+.pr-admin-tx{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:11px;line-height:1.55}
+.pr-admin-tx:last-child{border-bottom:0}
+.pr-admin-tx b{color:#fff}
+@media(max-width:480px){.pr-balance-admin-grid{grid-template-columns:1fr}.pr-theme-grid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 
 
@@ -1202,7 +1223,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
                     <div class="pr-task-reward">
 
-                        +৳1 Reward
+                        +৳2 Reward
 
                     </div>
 
@@ -1294,7 +1315,10 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
          PROFILE
          ===================================================== -->
     <section id="prProfile" class="pr-section">
-        <h2><i class="fas fa-user"></i> Profile</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <h2 style="margin:0"><i class="fas fa-user"></i> Profile</h2>
+            <button class="pr-btn pr-action-btn" style="padding:9px 12px" onclick="PR_openThemeModal()"><i class="fas fa-palette"></i> Theme</button>
+        </div>
         <div class="pr-card pr-profile-card">
             <img id="prProfileAvatar" class="pr-profile-large" alt="Telegram Profile Photo">
             <div style="color:var(--muted);font-size:12px;margin-bottom:10px"><i class="fab fa-telegram"></i> Telegram Profile Photo</div>
@@ -1357,6 +1381,24 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
         </div>
     </section>
 
+
+    <!-- THEME MODAL -->
+    <div id="prThemeModal" class="pr-modal" onclick="if(event.target===this) PR_closeThemeModal()">
+        <div class="pr-modal-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h3 style="margin:0"><i class="fas fa-palette"></i> Theme</h3>
+                <button class="pr-icon-btn" onclick="PR_closeThemeModal()"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div style="color:var(--muted);font-size:12px">আপনার Profile-এর জন্য পছন্দের থিম নির্বাচন করুন।</div>
+            <div class="pr-theme-grid">
+                <button class="pr-theme-option" data-theme="royal" onclick="PR_setTheme('royal')">👑 Royal</button>
+                <button class="pr-theme-option" data-theme="ocean" onclick="PR_setTheme('ocean')">🌊 Ocean</button>
+                <button class="pr-theme-option" data-theme="emerald" onclick="PR_setTheme('emerald')">💚 Emerald</button>
+                <button class="pr-theme-option" data-theme="sunset" onclick="PR_setTheme('sunset')">🔥 Sunset</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NOTIFICATION MODAL -->
     <div id="prNotificationModal" class="pr-modal" onclick="if(event.target===this) PR_closeNotifications()">
         <div class="pr-modal-card">
@@ -1402,7 +1444,12 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     <section id="prAdmin" class="pr-section">
         <h2><i class="fas fa-user-shield"></i> Admin Panel</h2>
         <div class="pr-card">
-            <div style="font-weight:700">Telegram Broadcast</div>
+            <div style="font-weight:700"><i class="fas fa-rotate"></i> Firebase Data Sync</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 10px">Users, balance/referral summary এবং existing referral links-এর data পুনরায় sync করুন।</div>
+            <button class="pr-btn warning full" onclick="PR_syncFirebaseData()">Sync Firebase Data</button>
+        </div>
+        <div class="pr-card">
+            <div style="font-weight:700">Telegram Broadcast</div><div style="font-size:11px;color:#ffcf70;margin-top:4px">Admin access: PR_ADMIN_IDS only</div>
             <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Admin ID: 1790702856</div>
             <input id="prAdminNotifyTitle" class="pr-input" maxlength="120" placeholder="Notification Title">
             <textarea id="prAdminNotifyMessage" class="pr-input" maxlength="4096" rows="6" placeholder="সকল user-কে যে message পাঠাবেন..."></textarea>
@@ -1434,6 +1481,31 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <button class="pr-btn warning full" onclick="PR_adminCreateTask()"><i class="fas fa-plus"></i> Admin Task Add</button>
             <div id="prAdminPendingTasks" style="margin-top:15px"></div>
         </div>
+
+        <div class="pr-card">
+            <div style="font-weight:700"><i class="fas fa-wallet"></i> Admin Balance Manager</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">শুধু PR_ADMIN_IDS-এর Admin user নির্বাচন করে balance Add/Remove করতে পারবেন।</div>
+            <div class="pr-balance-admin-grid">
+                <div class="pr-admin-balance-card add">
+                    <h3>➕ Balance Add</h3>
+                    <input id="prAdminAddUser" class="pr-input" maxlength="100" placeholder="User ID / @Username">
+                    <input id="prAdminAddAmount" class="pr-input" type="number" min="0.01" step="0.01" placeholder="Amount">
+                    <input id="prAdminAddReason" class="pr-input" maxlength="300" placeholder="Reason / Description">
+                    <button class="pr-btn success full" onclick="PR_adminBalanceChange('add')">Add Balance</button>
+                </div>
+                <div class="pr-admin-balance-card remove">
+                    <h3>➖ Balance Remove</h3>
+                    <input id="prAdminRemoveUser" class="pr-input" maxlength="100" placeholder="User ID / @Username">
+                    <input id="prAdminRemoveAmount" class="pr-input" type="number" min="0.01" step="0.01" placeholder="Amount">
+                    <input id="prAdminRemoveReason" class="pr-input" maxlength="300" placeholder="Reason / Description">
+                    <button class="pr-btn full" style="background:linear-gradient(145deg,#ff6b6b,#c0392b)" onclick="PR_adminBalanceChange('remove')">Remove Balance</button>
+                </div>
+            </div>
+            <div id="prAdminBalanceStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
+            <div style="margin-top:15px;font-weight:700">Balance Transaction History</div>
+            <div id="prAdminBalanceHistory" style="margin-top:8px"><div class="pr-ref-empty">Loading...</div></div>
+        </div>
+
         <div class="pr-card">
             <div style="font-weight:700;margin-bottom:8px">App Notification</div>
             <button class="pr-btn success full" onclick="PR_adminInAppBroadcast()"><i class="fas fa-bell"></i> সকল User-এর App Notification</button>
@@ -1472,7 +1544,7 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 const PR_ADMIN_IDS = ["1790702856"];
 // IMPORTANT: Never publish a real BotFather token in frontend production.
 // Put your token here only if you accept that users can inspect this HTML.
-const PR_BOT_TOKEN = "8706433846:AAGiYA3klz5-U6THlIXhYJ1c4oQp6XdX7Ck";
+const PR_BOT_TOKEN = "8706433846:AAF1dLkRKmGOBEwPnDasUqMau0YbXzI9ARg";
 
 
 /* =========================================================
@@ -2125,6 +2197,7 @@ async function PR_loadUser(){
     PR_loadAdminBanners();
     PR_loadApprovedTasks();
     if(PR_isAdmin()) PR_loadPendingAdminTasks();
+    if(PR_isAdmin()) PR_loadAdminBalanceHistory();
 
 }
 
@@ -2982,12 +3055,24 @@ async function PR_showMonetagAd(){
 
         const userRef=PR_db.collection("users").doc(String(PR_currentUser.id));
         const adReward=Number(PR_SETTINGS.adReward||0);
-        await userRef.update({
-            balance:firebase.firestore.FieldValue.increment(adReward),
-            totalIncome:firebase.firestore.FieldValue.increment(adReward),
-            todayIncome:firebase.firestore.FieldValue.increment(adReward),
-            adsWatched:firebase.firestore.FieldValue.increment(1),
-            incomeDay:new Date().toISOString().slice(0,10)
+        const adTxId="AD-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,7).toUpperCase();
+        await PR_db.runTransaction(async(transaction)=>{
+            const snap=await transaction.get(userRef);
+            if(!snap.exists) throw new Error("USER_NOT_FOUND");
+            const d=snap.data()||{};
+            const before=Number(d.balance||0);
+            transaction.update(userRef,{
+                balance:before+adReward,
+                totalIncome:Number(d.totalIncome||0)+adReward,
+                todayIncome:String(d.incomeDay||"")===new Date().toISOString().slice(0,10) ? Number(d.todayIncome||0)+adReward : adReward,
+                adsWatched:Number(d.adsWatched||0)+1,
+                incomeDay:new Date().toISOString().slice(0,10)
+            });
+            transaction.set(PR_db.collection("earningTransactions").doc(adTxId),{
+                transactionId:adTxId,type:"ad_reward",userId:String(PR_currentUser.id),
+                amount:adReward,beforeBalance:before,afterBalance:before+adReward,
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            });
         });
 
         PR_currentUser.balance=Number(PR_currentUser.balance||0)+adReward;
