@@ -1198,7 +1198,10 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
 .pr-lb-avatar,.pr-lb-fallback{width:34px;height:34px;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:2px solid #c9a341;background:#30251b;color:#fff;font-weight:1000;font-size:13px}
 .pr-lb-user{min-width:0;flex:1}.pr-lb-name{font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-lb-meta{font-size:8px;color:#c6b8ad;margin-top:2px;display:flex;align-items:center;gap:5px}.pr-lb-badge{background:#542d76;color:#f1d8ff;border-radius:6px;padding:1px 4px;font-size:7px;font-weight:900}
 .pr-lb-score{color:#ffd34e;font-size:11px;font-weight:1000;white-space:nowrap}.pr-lb-score span{font-size:9px}
-.pr-lb-current{position:fixed;left:50%;transform:translateX(-50%);bottom:6px;width:min(92%,360px);z-index:50;background:linear-gradient(180deg,#7b673a,#4d432c);border-color:rgba(255,226,139,.6);box-shadow:0 8px 25px rgba(0,0,0,.55)}
+.pr-lb-current{position:sticky;left:auto;transform:none;bottom:8px;width:calc(100% - 20px);margin:10px auto 0;z-index:8;background:linear-gradient(180deg,#7b673a,#4d432c);border-color:rgba(255,226,139,.6);box-shadow:0 8px 25px rgba(0,0,0,.55)}
+.pr-lb-current-avatar{width:34px!important;height:34px!important;min-width:34px;max-width:34px;object-fit:cover;border-radius:50%;flex:0 0 34px!important;display:flex;align-items:center;justify-content:center}
+.pr-lb-current .pr-lb-fallback{width:34px!important;height:34px!important;min-width:34px;max-width:34px;flex:0 0 34px!important}
+.pr-lb-current .pr-lb-score{margin-left:auto}
 .pr-lb-no-banner{padding-top:6px;background:transparent}
 .pr-lb-no-banner .pr-lb-podium{padding:8px 7px 12px;background:radial-gradient(circle at 50% 0,rgba(255,186,45,.12),transparent 58%);border-radius:14px}
 .pr-admin-users-search{display:flex;gap:8px;align-items:center}
@@ -1602,7 +1605,7 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
         <div class="pr-card">
             <div style="font-weight:700">Telegram Broadcast</div><div style="font-size:11px;color:#ffcf70;margin-top:4px">Admin access: PR_ADMIN_IDS only</div>
             <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Admin ID: 1790702856</div>
-            <div style="color:#ffcf70;font-size:11px;margin:0 0 10px">Telegram message পেতে user-কে আগে আপনার Bot-এ Start করতে হবে। Broadcast status-এ Telegram API-এর exact failed reason দেখাবে।</div>
+            <div style="color:#ffcf70;font-size:11px;margin:0 0 10px">User-এর valid Telegram chat ID Firestore-এ থাকতে হবে এবং user-কে আগে আপনার Bot-এ Start করতে হবে। Broadcast-এ প্রতিটি failed user-এর Telegram API error আলাদা করে গণনা হবে।</div>
             <input id="prAdminNotifyTitle" class="pr-input" maxlength="120" placeholder="Notification Title">
             <textarea id="prAdminNotifyMessage" class="pr-input" maxlength="4096" rows="6" placeholder="সকল user-কে যে message পাঠাবেন..."></textarea>
             <input id="prAdminBroadcastPhoto" class="pr-input" type="file" accept="image/*">
@@ -2535,7 +2538,7 @@ async function PR_tryLoadTelegramPhoto(){
     }
 
     // Fallback for Telegram clients that do not expose photo_url in initData.
-    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return;
+    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAHJnPFXeDHAGeLqdpGA7_4fTZv7wOQFWIg") return;
 
     try{
         const q=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getUserProfilePhotos?user_id=${encodeURIComponent(tgUser.id)}&limit=1`);
@@ -2804,21 +2807,44 @@ async function PR_addNotification(userId,title,message,sendTelegram=true){
 
 async function PR_sendTelegramNotification(chatId,text){
     let id=String(chatId||"").trim();
-    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return false;
+    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAHJnPFXeDHAGeLqdpGA7_4fTZv7wOQFWIg") return false;
+
+    // Resolve a real Telegram chat ID from the supplied user/document ID.
     if(!/^[-]?\d+$/.test(id) && PR_db){
         try{
-            const snap=await PR_db.collection("users").doc(id).get();
-            if(snap.exists)id=String(snap.data()?.telegramId||snap.data()?.chatId||snap.data()?.userId||"").trim();
-        }catch(_){}
+            const candidates=[];
+            const exact=await PR_db.collection("users").doc(id).get();
+            if(exact.exists)candidates.push(exact.data()||{});
+            if(!candidates.length){
+                for(const field of ["telegramId","chatId","userId","id"]){
+                    const q=await PR_db.collection("users").where(field,"==",id).limit(5).get();
+                    q.forEach(d=>candidates.push(d.data()||{}));
+                    if(candidates.length)break;
+                }
+            }
+            const u=candidates.find(x=>/^[-]?\d+$/.test(String(x.telegramId||x.chatId||x.userId||x.id||"")));
+            if(u)id=String(u.telegramId||u.chatId||u.userId||u.id).trim();
+        }catch(e){console.warn("Telegram ID resolve failed",e);}
     }
-    if(!/^[-]?\d+$/.test(id)) return false;
-    const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({chat_id:id,text:String(text||""),disable_web_page_preview:true})
-    });
-    const d=await r.json().catch(()=>({}));
-    if(!d.ok) throw new Error(d.description||`HTTP ${r.status}`);
-    return true;
+    if(!/^[-]?\d+$/.test(id)) throw new Error("INVALID_TELEGRAM_CHAT_ID");
+
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),12000);
+    try{
+        const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({chat_id:id,text:String(text||""),disable_web_page_preview:true}),
+            signal:controller.signal
+        });
+        const d=await r.json().catch(()=>({}));
+        if(!d.ok){
+            const err=new Error(d.description||`HTTP ${r.status}`);
+            err.retryAfter=Number(d.parameters?.retry_after||0);
+            throw err;
+        }
+        return true;
+    }finally{clearTimeout(timer);}
 }
 
 async function PR_addActivity(username,action,amount){
@@ -3144,36 +3170,53 @@ window.PR_adminBroadcast=async function(){
     const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
     const status=document.getElementById("prAdminStatus");
     if(!title||!message)return Swal.fire("Missing","Title এবং message দিন।","warning");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
+    if(!PR_BOT_TOKEN||PR_BOT_TOKEN==="PASTE_8706433846:AAHJnPFXeDHAGeLqdpGA7_4fTZv7wOQFWIg")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
     try{
         const users=await PR_getAllUsers();
         const seen=new Set(),targets=[];
         for(const u of users){
             const chatId=String(u.telegramId||u.chatId||u.userId||u.id||"").trim();
-            if(/^[-]?\d+$/.test(chatId)&&!seen.has(chatId)){seen.add(chatId);targets.push({id:chatId,...u});}
-        }
-        if(!targets.length)return Swal.fire("No Users","কোনো valid Telegram ID পাওয়া যায়নি।","info");
-        let sent=0,failed=0,failReasons={};
-        const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-        for(const u of targets){
-            let ok=false,lastError="";
-            for(let attempt=0;attempt<3&&!ok;attempt++){
-                try{
-                    const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:String(u.id),text:`${title}\n\n${message}`,disable_web_page_preview:true})});
-                    const d=await r.json().catch(()=>({}));
-                    if(d.ok){ok=true;sent++;try{await PR_addNotification(String(u.id),title,message,false);}catch(_){}break;}
-                    lastError=String(d.description||`HTTP ${r.status}`);
-                    if(Number(d.parameters?.retry_after)>0){await sleep((Number(d.parameters.retry_after)+1)*1000);continue;}
-                    if(/too many requests/i.test(lastError)){await sleep(1200);continue;}
-                    break;
-                }catch(e){lastError=String(e.message||e);await sleep(700);}
+            if(/^[-]?\d+$/.test(chatId)&&!seen.has(chatId)){
+                seen.add(chatId);targets.push({...u,id:chatId,chatId});
             }
-            if(!ok){failed++;failReasons[lastError]=(failReasons[lastError]||0)+1;}
-            if(status)status.innerText=`Sent: ${sent} | Failed: ${failed} / ${targets.length}`;
-            await sleep(45);
         }
-        const details=Object.entries(failReasons).slice(0,3).map(([k,v])=>`${v}× ${k}`).join("<br>");
-        Swal.fire("Broadcast Complete",`Sent: ${sent}<br>Failed: ${failed}${details?`<br><br><small>${details}</small>`:""}`,failed?"warning":"success");
+        if(!targets.length)return Swal.fire("No Users","কোনো valid Telegram chat ID পাওয়া যায়নি।","info");
+        let sent=0,failed=0,blocked=0,invalid=0,other=0;
+        const reasons={};
+        const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+        for(let i=0;i<targets.length;i++){
+            const u=targets[i];
+            let ok=false,lastError="";
+            for(let attempt=0;attempt<4&&!ok;attempt++){
+                try{
+                    const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{
+                        method:"POST",headers:{"Content-Type":"application/json"},
+                        body:JSON.stringify({chat_id:String(u.chatId),text:`${title}\n\n${message}`,disable_web_page_preview:true})
+                    });
+                    const d=await r.json().catch(()=>({}));
+                    if(d.ok){ok=true;sent++;break;}
+                    lastError=String(d.description||`HTTP ${r.status}`);
+                    const low=lastError.toLowerCase();
+                    if(Number(d.parameters?.retry_after)>0){await sleep((Number(d.parameters.retry_after)+1)*1000);continue;}
+                    if(/too many requests|retry later/i.test(low)){await sleep(1500);continue;}
+                    break;
+                }catch(e){lastError=String(e.name==="AbortError"?"Telegram request timeout":e.message||e);await sleep(1000);}
+            }
+            if(ok){
+                try{await PR_addNotification(String(u.id),title,message,false);}catch(_){ }
+            }else{
+                failed++;
+                const low=lastError.toLowerCase();
+                if(/blocked|deactivated|chat not found|user is deactivated/i.test(low))blocked++;
+                else if(/chat_id|not found|invalid/i.test(low))invalid++;
+                else other++;
+                reasons[lastError]=(reasons[lastError]||0)+1;
+            }
+            if(status)status.innerText=`Sent: ${sent} | Failed: ${failed} / ${targets.length} | Blocked/Not Started: ${blocked}`;
+            await sleep(90);
+        }
+        const topReasons=Object.entries(reasons).slice(0,5).map(([k,v])=>`${v}× ${k}`).join("<br>");
+        Swal.fire("Broadcast Complete",`Sent: ${sent}<br>Failed: ${failed}<br>Blocked/Not Started: ${blocked}<br>Invalid ID: ${invalid}${other?`<br>Other: ${other}`:""}${topReasons?`<br><br><small>${topReasons}</small>`:""}`,failed?"warning":"success");
     }catch(e){console.error("Telegram broadcast:",e);Swal.fire("Error",e.message||"Telegram broadcast failed।","error");}
 };
 
@@ -3182,7 +3225,7 @@ window.PR_adminBroadcast=async function(){
    ========================================================= */
 window.PR_adminSendSingle = async function(){
     if(!PR_isAdmin()) return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
+    if(PR_BOT_TOKEN==="PASTE_8706433846:AAHJnPFXeDHAGeLqdpGA7_4fTZv7wOQFWIg") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
 
     const username=(document.getElementById("prAdminSingleUsername")?.value||"").trim().replace(/^@/,"").toLowerCase();
     const message=(document.getElementById("prAdminSingleMessage")?.value||"").trim();
@@ -3239,7 +3282,7 @@ window.PR_adminSendSingle = async function(){
    ========================================================= */
 window.PR_adminBroadcastPhoto=async function(){
     if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
+    if(PR_BOT_TOKEN==="PASTE_8706433846:AAHJnPFXeDHAGeLqdpGA7_4fTZv7wOQFWIg")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
     const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim();
     const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
     const file=document.getElementById("prAdminBroadcastPhoto")?.files?.[0]||null;
@@ -3919,8 +3962,9 @@ async function PR_loadLeaderboard(period="all"){
         const rankById=new Map(users.map((u,i)=>[String(u.id),i+1]));
         const top25=users.slice(0,25);
         const me=users.find(u=>String(u.id)===String(PR_currentUser.id)||String(u.telegramId||"")===String(PR_currentUser.telegramId||""));
+        if(me && PR_currentUser.photoUrl) me.photoUrl=PR_currentUser.photoUrl;
         const escape=window.PR_escapeHtml||((x)=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])));
-        const avatar=(u,cls="pr-lb-avatar")=>{const photo=String(u.photoUrl||"").trim(),initial=String(u.name||u.username||"U").trim().slice(0,1).toUpperCase();return photo?`<img class="${cls}" src="${escape(photo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls} pr-lb-fallback" style="display:none">${escape(initial)}</span>`:`<span class="${cls} pr-lb-fallback">${escape(initial)}</span>`;};
+        const avatar=(u,cls="pr-lb-avatar")=>{const photo=String(u.photoUrl||u.telegramPhotoUrl||"").trim(),initial=String(u.name||u.username||"U").trim().slice(0,1).toUpperCase();return photo?`<img class="${cls}" src="${escape(photo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls} pr-lb-fallback" style="display:none">${escape(initial)}</span>`:`<span class="${cls} pr-lb-fallback">${escape(initial)}</span>`;};
         const badge=(u)=>{const manual=Array.isArray(u.manualBadges)?u.manualBadges:[];if(manual.length)return escape(String(manual[0]));if(Number(u.totalRef||0)>=20)return "VIP";if(Number(u.totalRef||0)>=10)return "PRO";return "N7";};
         const flag=(u)=>String(u.countryFlag||u.flag||"🇧🇩").trim()||"🇧🇩";
         const podiumData=[top25[1]||null,top25[0]||null,top25[2]||null];
