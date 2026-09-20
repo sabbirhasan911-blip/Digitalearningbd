@@ -1155,15 +1155,10 @@ body{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .pr-theme-option:active{transform:scale(.97)}
 
 .pr-theme-option.active{background:linear-gradient(145deg,#ffb347,#ff7a00)!important;color:#111!important;border-color:#ff9f1c}
-.pr-balance-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pr-admin-balance-card{border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;background:rgba(255,255,255,.035)}
-.pr-admin-balance-card h3{margin:0 0 8px}
-.pr-admin-balance-card.add{border-color:rgba(46,213,115,.25)}
-.pr-admin-balance-card.remove{border-color:rgba(255,71,87,.25)}
 .pr-admin-tx{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:11px;line-height:1.55}
 .pr-admin-tx:last-child{border-bottom:0}
 .pr-admin-tx b{color:#fff}
-@media(max-width:480px){.pr-balance-admin-grid{grid-template-columns:1fr}.pr-theme-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.pr-theme-grid{grid-template-columns:repeat(2,1fr)}}
 
 
 /* Requested: remove the old leaderboard top banner/hero. */
@@ -1204,6 +1199,17 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
 .pr-lb-user{min-width:0;flex:1}.pr-lb-name{font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pr-lb-meta{font-size:8px;color:#c6b8ad;margin-top:2px;display:flex;align-items:center;gap:5px}.pr-lb-badge{background:#542d76;color:#f1d8ff;border-radius:6px;padding:1px 4px;font-size:7px;font-weight:900}
 .pr-lb-score{color:#ffd34e;font-size:11px;font-weight:1000;white-space:nowrap}.pr-lb-score span{font-size:9px}
 .pr-lb-current{position:fixed;left:50%;transform:translateX(-50%);bottom:6px;width:min(92%,360px);z-index:50;background:linear-gradient(180deg,#7b673a,#4d432c);border-color:rgba(255,226,139,.6);box-shadow:0 8px 25px rgba(0,0,0,.55)}
+.pr-lb-no-banner{padding-top:6px;background:transparent}
+.pr-lb-no-banner .pr-lb-podium{padding:8px 7px 12px;background:radial-gradient(circle at 50% 0,rgba(255,186,45,.12),transparent 58%);border-radius:14px}
+.pr-admin-users-search{display:flex;gap:8px;align-items:center}
+.pr-admin-user-card{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:15px;background:rgba(255,255,255,.035);margin-top:8px}
+.pr-admin-user-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.pr-admin-user-grid>div{padding:7px 8px;border-radius:9px;background:rgba(0,0,0,.16);font-size:11px}
+.pr-admin-ref-level{margin-top:7px;padding:8px;border-radius:10px;background:rgba(108,92,231,.08);font-size:11px}
+.pr-admin-ref-level b{color:#ffd75a}
+.pr-admin-user-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+@media(max-width:480px){.pr-admin-user-grid{grid-template-columns:1fr}.pr-admin-users-search{flex-direction:column;align-items:stretch}}
+
 .pr-lb-current-avatar{border-color:#ffe27a}.pr-lb-current-rank{color:#eee0b9}
 @media(max-width:380px){.pr-lb-podium-card.p1{min-height:145px}.pr-lb-podium-card.p2{min-height:126px}.pr-lb-podium-card.p3{min-height:116px}.pr-lb-podium-avatar{width:43px;height:43px}.pr-lb-podium-card.p1 .pr-lb-podium-avatar{width:51px;height:51px}}
 
@@ -1596,6 +1602,7 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
         <div class="pr-card">
             <div style="font-weight:700">Telegram Broadcast</div><div style="font-size:11px;color:#ffcf70;margin-top:4px">Admin access: PR_ADMIN_IDS only</div>
             <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">Admin ID: 1790702856</div>
+            <div style="color:#ffcf70;font-size:11px;margin:0 0 10px">Telegram message পেতে user-কে আগে আপনার Bot-এ Start করতে হবে। Broadcast status-এ Telegram API-এর exact failed reason দেখাবে।</div>
             <input id="prAdminNotifyTitle" class="pr-input" maxlength="120" placeholder="Notification Title">
             <textarea id="prAdminNotifyMessage" class="pr-input" maxlength="4096" rows="6" placeholder="সকল user-কে যে message পাঠাবেন..."></textarea>
             <input id="prAdminBroadcastPhoto" class="pr-input" type="file" accept="image/*">
@@ -1625,6 +1632,18 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
             <div id="prAdminTaskTotal" style="font-weight:800;margin:5px 0 12px">মোট বাজেট: ৳0.00</div>
             <button class="pr-btn warning full" onclick="PR_adminCreateTask()"><i class="fas fa-plus"></i> Admin Task Add</button>
             <div id="prAdminPendingTasks" style="margin-top:15px"></div><div style="font-weight:700;margin-top:16px">Approved / Live Tasks</div><div id="prAdminApprovedTasks" style="margin-top:10px"></div>
+        </div>
+
+        <div class="pr-card pr-admin-user-manager">
+            <div style="font-weight:700"><i class="fas fa-users-gear"></i> User Details</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">সকল Bot user-এর তথ্য দেখুন, search করুন এবং প্রয়োজন হলে Name, Username, Telegram ID, Balance, Referrer ও VIP status edit করুন। Missing referral হলে Referrer ID/Username দিয়ে manual set করতে পারবেন।</div>
+            <div class="pr-admin-users-search">
+                <input id="prAdminUserSearch" class="pr-input" maxlength="100" placeholder="Search by Telegram ID / @username / name">
+                <button class="pr-btn warning" onclick="PR_adminLoadUsers()"><i class="fas fa-search"></i> Search</button>
+                <button class="pr-btn" onclick="PR_adminLoadUsers(true)"><i class="fas fa-rotate"></i> All</button>
+            </div>
+            <div id="prAdminUserCount" style="color:var(--muted);font-size:11px;margin-top:8px"></div>
+            <div id="prAdminUserList" style="margin-top:8px"><div class="pr-ref-empty">Users loading...</div></div>
         </div>
 
         <div class="pr-card pr-admin-badge-manager">
@@ -1661,27 +1680,8 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
         </div>
 
         <div class="pr-card">
-            <div style="font-weight:700"><i class="fas fa-wallet"></i> Admin Balance Manager</div>
-            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">শুধু PR_ADMIN_IDS-এর Admin user নির্বাচন করে balance Add/Remove করতে পারবেন।</div>
-            <div class="pr-balance-admin-grid">
-                <div class="pr-admin-balance-card add">
-                    <h3>➕ Balance Add</h3>
-                    <input id="prAdminAddUser" class="pr-input" maxlength="100" placeholder="User ID / @Username">
-                    <input id="prAdminAddAmount" class="pr-input" type="number" min="0.01" step="0.01" placeholder="Amount">
-                    <input id="prAdminAddReason" class="pr-input" maxlength="300" placeholder="Reason / Description">
-                    <button class="pr-btn success full" onclick="PR_adminBalanceChange('add')">Add Balance</button>
-                </div>
-                <div class="pr-admin-balance-card remove">
-                    <h3>➖ Balance Remove</h3>
-                    <input id="prAdminRemoveUser" class="pr-input" maxlength="100" placeholder="User ID / @Username">
-                    <input id="prAdminRemoveAmount" class="pr-input" type="number" min="0.01" step="0.01" placeholder="Amount">
-                    <input id="prAdminRemoveReason" class="pr-input" maxlength="300" placeholder="Reason / Description">
-                    <button class="pr-btn full" style="background:linear-gradient(145deg,#ff6b6b,#c0392b)" onclick="PR_adminBalanceChange('remove')">Remove Balance</button>
-                </div>
-            </div>
-            <div id="prAdminBalanceStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
-            <div style="margin-top:15px;font-weight:700">Balance Transaction History</div>
-            <div id="prAdminBalanceHistory" style="margin-top:8px"><div class="pr-ref-empty">Loading...</div></div>
+            <div style="font-weight:700"><i class="fas fa-circle-info"></i> Balance Edit</div>
+            <div style="color:var(--muted);font-size:12px;margin-top:6px">পুরনো আলাদা Balance Add / Remove অপশন বাদ দেওয়া হয়েছে। এখন Admin → User Details → Edit থেকে user-এর balance সরাসরি সেট করা যাবে।</div>
         </div>
 
         <div class="pr-card">
@@ -2396,6 +2396,7 @@ async function PR_loadUser(){
     if(PR_isAdmin()&&window.PR_loadAdminVipPayments)PR_loadAdminVipPayments();
     if(PR_isAdmin())PR_loadAdminBalanceHistory();
     if(PR_isAdmin())PR_loadAdminWithdrawals();
+    if(PR_isAdmin())PR_adminLoadUsers(true);
     PR_renderBadges();
     PR_loadFinancialHistory();
     PR_retryPendingRewards().catch(()=>{});
@@ -2534,7 +2535,7 @@ async function PR_tryLoadTelegramPhoto(){
     }
 
     // Fallback for Telegram clients that do not expose photo_url in initData.
-    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAGq9gmOLx59aVIpBWOsjiXYFixY_TsXrtA") return;
+    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return;
 
     try{
         const q=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/getUserProfilePhotos?user_id=${encodeURIComponent(tgUser.id)}&limit=1`);
@@ -2784,14 +2785,40 @@ function PR_startNotificationListener(){
         }, err=>console.error("Notification listener:",err));
 }
 
-async function PR_addNotification(userId,title,message){
-    if(!PR_db || !userId) return;
-    try{
-        await PR_db.collection("notifications").add({
-            userId:String(userId), title:String(title||"Notification"), message:String(message||""), read:false,
-            createdAt:firebase.firestore.FieldValue.serverTimestamp()
-        });
-    }catch(e){ console.error("Notification write:",e); }
+async function PR_addNotification(userId,title,message,sendTelegram=true){
+    if(!userId) return;
+    const uid=String(userId).trim(), ttl=String(title||"Notification"), msg=String(message||"");
+    if(PR_db){
+        try{
+            await PR_db.collection("notifications").add({
+                userId:uid, title:ttl, message:msg, read:false,
+                createdAt:firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }catch(e){ console.error("Notification write:",e); }
+    }
+    if(sendTelegram){
+        try{ await PR_sendTelegramNotification(uid,`${ttl}\n\n${msg}`); }
+        catch(e){ console.warn("Telegram notification failed:",e); }
+    }
+}
+
+async function PR_sendTelegramNotification(chatId,text){
+    let id=String(chatId||"").trim();
+    if(!PR_BOT_TOKEN || PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return false;
+    if(!/^[-]?\d+$/.test(id) && PR_db){
+        try{
+            const snap=await PR_db.collection("users").doc(id).get();
+            if(snap.exists)id=String(snap.data()?.telegramId||snap.data()?.chatId||snap.data()?.userId||"").trim();
+        }catch(_){}
+    }
+    if(!/^[-]?\d+$/.test(id)) return false;
+    const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({chat_id:id,text:String(text||""),disable_web_page_preview:true})
+    });
+    const d=await r.json().catch(()=>({}));
+    if(!d.ok) throw new Error(d.description||`HTTP ${r.status}`);
+    return true;
 }
 
 async function PR_addActivity(username,action,amount){
@@ -2822,51 +2849,54 @@ function PR_copyReferralCode(){
     if(navigator.clipboard) navigator.clipboard.writeText(code).then(()=>Swal.fire({title:"Copied!",text:"Referral code copy হয়েছে।",icon:"success",timer:1200,showConfirmButton:false}));
 }
 
-async function PR_loadDirectReferrals(){
-    const list=document.getElementById("prDirectReferralList");if(!list||!PR_db||!PR_currentUser.id)return;
-    try{const levels=await PR_getReferralLevels(),direct=levels[0]||[];PR_currentUser.directRefCount=direct.length;PR_currentUser.totalRef=levels.reduce((n,a)=>n+a.length,0);const rr=PR_getCurrentUserRef();if(rr)rr.update({directRefCount:direct.length,totalRef:PR_currentUser.totalRef}).catch(()=>{});if(!direct.length){list.innerHTML='<div class="pr-direct-empty">এখনও কোনো direct referral নেই।</div>';return;}list.innerHTML=direct.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L1 5%</div></div>`}).join("");PR_updateUI();}catch(e){console.error("Direct referral list:",e);list.innerHTML='<div class="pr-direct-empty">Referral data load করা যায়নি।</div>';}}
-async function PR_getReferralLevels(){
-    if(!PR_db||!PR_currentUser.id)return[[],[],[]];
+async function PR_getReferralLevelsForUser(rootId){
+    if(!PR_db||!rootId)return[[],[],[]];
     const snap=await PR_db.collection("users").get();
-    const all=[];
-    snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));
-
-    // Merge the supplied snapshot only when a live Firebase record is absent.
-    const byId=new Map(all.map(u=>[String(u.id),u]));
+    const byId=new Map();
+    snap.forEach(d=>byId.set(String(d.id),{id:String(d.id),...(d.data()||{})}));
     if(Array.isArray(PR_IMPORTED_USER_DATA)){
-        PR_IMPORTED_USER_DATA.forEach(u=>{
-            const id=String(u.id||"");
-            if(id && !byId.has(id))byId.set(id,{...u,id});
-        });
+        PR_IMPORTED_USER_DATA.forEach(u=>{const id=String(u.id||"");if(id&&!byId.has(id))byId.set(id,{...u,id});});
     }
-
-    const byRef=new Map();
+    const children=new Map();
     for(const u of byId.values()){
         const r=String(u.referrerId||"").trim();
         if(!r)continue;
-        if(!byRef.has(r))byRef.set(r,[]);
-        byRef.get(r).push(u);
+        if(!children.has(r))children.set(r,[]);
+        children.get(r).push(u);
     }
-
-    const levels=[[],[],[]];
-    const root=String(PR_currentUser.id);
-    const seen=new Set([root]);
+    const levels=[[],[],[]], root=String(rootId), seen=new Set([root]);
     let frontier=[root];
-
     for(let level=0;level<3;level++){
         const next=[];
-        for(const parentId of frontier){
-            for(const u of (byRef.get(String(parentId))||[])){
+        for(const parent of frontier){
+            for(const u of (children.get(String(parent))||[])){
                 const id=String(u.id||"");
-                if(!id || seen.has(id))continue;
-                seen.add(id);
-                levels[level].push(u);
-                next.push(id);
+                if(!id||seen.has(id))continue;
+                seen.add(id);levels[level].push(u);next.push(id);
             }
         }
         frontier=[...new Set(next)];
     }
     return levels;
+}
+
+window.PR_showReferralLevel=async function(level){
+    const summary=document.getElementById("prReferralLevelSummary"),list=document.getElementById("prReferralLevelList");
+    if(!summary||!list)return;
+    document.querySelectorAll(".pr-ref-level-tab").forEach(b=>b.classList.toggle("active",Number(b.dataset.level)===Number(level)));
+    try{
+        const levels=await PR_getReferralLevelsForUser(PR_currentUser.id),rows=levels[Number(level)-1]||[];
+        const rates={1:5,2:2,3:1};
+        summary.innerHTML=`<b>Level ${level}</b> • ${rows.length} জন • ${rates[level]}% commission`;
+        list.innerHTML=rows.length?rows.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L${level} ${rates[level]}%</div></div>`}).join(""):"<div class='pr-direct-empty'>এই level-এ কোনো referral নেই।</div>";
+    }catch(e){console.error("Referral level:",e);summary.innerText="Referral data load failed";list.innerHTML="<div class='pr-direct-empty'>Referral data load করা যায়নি।</div>";}
+};
+
+async function PR_loadDirectReferrals(){
+    const list=document.getElementById("prDirectReferralList");if(!list||!PR_db||!PR_currentUser.id)return;
+    try{const levels=await PR_getReferralLevels(),direct=levels[0]||[];PR_currentUser.directRefCount=direct.length;PR_currentUser.totalRef=levels.reduce((n,a)=>n+a.length,0);const rr=PR_getCurrentUserRef();if(rr)rr.update({directRefCount:direct.length,totalRef:PR_currentUser.totalRef}).catch(()=>{});if(!direct.length){list.innerHTML='<div class="pr-direct-empty">এখনও কোনো direct referral নেই।</div>';return;}list.innerHTML=direct.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L1 5%</div></div>`}).join("");PR_updateUI();}catch(e){console.error("Direct referral list:",e);list.innerHTML='<div class="pr-direct-empty">Referral data load করা যায়নি।</div>';}}
+async function PR_getReferralLevels(){
+    return PR_getReferralLevelsForUser(PR_currentUser.id);
 }
 
 async function PR_checkActivation(){
@@ -3114,12 +3144,12 @@ window.PR_adminBroadcast=async function(){
     const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
     const status=document.getElementById("prAdminStatus");
     if(!title||!message)return Swal.fire("Missing","Title এবং message দিন।","warning");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGq9gmOLx59aVIpBWOsjiXYFixY_TsXrtA")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
+    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
     try{
         const users=await PR_getAllUsers();
         const seen=new Set(),targets=[];
         for(const u of users){
-            const chatId=String(u.telegramId||u.userId||u.id||"").trim();
+            const chatId=String(u.telegramId||u.chatId||u.userId||u.id||"").trim();
             if(/^[-]?\d+$/.test(chatId)&&!seen.has(chatId)){seen.add(chatId);targets.push({id:chatId,...u});}
         }
         if(!targets.length)return Swal.fire("No Users","কোনো valid Telegram ID পাওয়া যায়নি।","info");
@@ -3131,7 +3161,7 @@ window.PR_adminBroadcast=async function(){
                 try{
                     const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:String(u.id),text:`${title}\n\n${message}`,disable_web_page_preview:true})});
                     const d=await r.json().catch(()=>({}));
-                    if(d.ok){ok=true;sent++;try{await PR_addNotification(String(u.id),title,message);}catch(_){}break;}
+                    if(d.ok){ok=true;sent++;try{await PR_addNotification(String(u.id),title,message,false);}catch(_){}break;}
                     lastError=String(d.description||`HTTP ${r.status}`);
                     if(Number(d.parameters?.retry_after)>0){await sleep((Number(d.parameters.retry_after)+1)*1000);continue;}
                     if(/too many requests/i.test(lastError)){await sleep(1200);continue;}
@@ -3152,7 +3182,7 @@ window.PR_adminBroadcast=async function(){
    ========================================================= */
 window.PR_adminSendSingle = async function(){
     if(!PR_isAdmin()) return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGq9gmOLx59aVIpBWOsjiXYFixY_TsXrtA") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
+    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
 
     const username=(document.getElementById("prAdminSingleUsername")?.value||"").trim().replace(/^@/,"").toLowerCase();
     const message=(document.getElementById("prAdminSingleMessage")?.value||"").trim();
@@ -3209,7 +3239,7 @@ window.PR_adminSendSingle = async function(){
    ========================================================= */
 window.PR_adminBroadcastPhoto=async function(){
     if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGq9gmOLx59aVIpBWOsjiXYFixY_TsXrtA")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
+    if(PR_BOT_TOKEN==="PASTE_8706433846:AAGmLkAg4d9gabz8oLCVnPeSVBbi1jRRRS4")return Swal.fire("Bot Token Missing","Bot token সেট করা নেই।","warning");
     const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim();
     const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
     const file=document.getElementById("prAdminBroadcastPhoto")?.files?.[0]||null;
@@ -3219,7 +3249,7 @@ window.PR_adminBroadcastPhoto=async function(){
     try{
         const users=await PR_getAllUsers();
         const seen=new Set(),targets=[];
-        for(const u of users){const chatId=String(u.telegramId||u.userId||u.id||"").trim();if(/^[-]?\d+$/.test(chatId)&&!seen.has(chatId)){seen.add(chatId);targets.push({id:chatId,...u});}}
+        for(const u of users){const chatId=String(u.telegramId||u.chatId||u.userId||u.id||"").trim();if(/^[-]?\d+$/.test(chatId)&&!seen.has(chatId)){seen.add(chatId);targets.push({id:chatId,...u});}}
         let sent=0,failed=0;const sleep=ms=>new Promise(r=>setTimeout(r,ms));
         for(const u of targets){
             let ok=false;
@@ -3228,7 +3258,7 @@ window.PR_adminBroadcastPhoto=async function(){
                     const fd=new FormData();fd.append("chat_id",String(u.id));if(message)fd.append("caption",message);if(file)fd.append("photo",file);else fd.append("photo",url);
                     const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendPhoto`,{method:"POST",body:fd});
                     const d=await r.json().catch(()=>({}));
-                    if(d.ok){ok=true;sent++;try{await PR_addNotification(String(u.id),title||"Admin Photo",message||"আপনাকে একটি photo পাঠানো হয়েছে।");}catch(_){}break;}
+                    if(d.ok){ok=true;sent++;try{await PR_addNotification(String(u.id),title||"Admin Photo",message||"আপনাকে একটি photo পাঠানো হয়েছে।",false);}catch(_){}break;}
                     if(Number(d.parameters?.retry_after)>0){await sleep((Number(d.parameters.retry_after)+1)*1000);continue;}
                     if(/too many requests/i.test(String(d.description||""))){await sleep(1200);continue;}
                     break;
@@ -3288,6 +3318,56 @@ window.PR_loadPendingAdminTasks=async function(){
 window.PR_adminApproveTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)throw new Error("NOT_FOUND");if(String(snap.data()?.status)!=="pending")throw new Error("ALREADY_PROCESSED");await ref.update({status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_loadPendingAdminTasks();Swal.fire("Approved","Task live হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Approve failed","error");}};
 window.PR_adminDeleteTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)return;const t=snap.data()||{};if(String(t.status)==="pending" && t.ownerId){const uRef=PR_db.collection("users").doc(String(t.ownerId));const total=Number(t.reservedAmount??t.totalBudget??0);await PR_db.runTransaction(async(tx)=>{const us=await tx.get(uRef);if(us.exists)tx.update(uRef,{balance:Number(us.data()?.balance||0)+total});tx.update(ref,{status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});});}else{await ref.update({status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});}await PR_loadPendingAdminTasks();await PR_loadApprovedTasks();Swal.fire("Deleted","Task deleted হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Delete failed","error");}};
 window.PR_adminRejectTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));await PR_db.runTransaction(async(tx)=>{const snap=await tx.get(ref);if(!snap.exists)throw new Error("NOT_FOUND");const t=snap.data()||{};if(String(t.status)!=="pending")throw new Error("ALREADY_PROCESSED");const total=Number(t.reservedAmount??t.totalBudget??0);const uRef=PR_db.collection("users").doc(String(t.ownerId));const us=await tx.get(uRef);if(!us.exists)throw new Error("USER_NOT_FOUND");const before=Number(us.data()?.balance||0);tx.update(uRef,{balance:before+total});tx.update(ref,{status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp()});tx.set(PR_db.collection("earningTransactions").doc(String(id)+"-REFUND"),{transactionId:String(id)+"-REFUND",type:"task_reserve_refund",userId:String(t.ownerId),amount:total,beforeBalance:before,afterBalance:before+total,status:"completed",source:"task_rejected",reference:String(id),createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await PR_loadPendingAdminTasks();Swal.fire("Rejected","Task reject হয়েছে এবং refund করা হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Reject failed","error");}};
+/* =========================================================
+   ADMIN USER DETAILS / MANUAL REFERRER / BALANCE EDIT
+   ========================================================= */
+window.PR_adminLoadUsers=async function(showAll=false){
+    if(!PR_isAdmin()||!PR_db)return;
+    const box=document.getElementById("prAdminUserList"),count=document.getElementById("prAdminUserCount");
+    if(!box)return;
+    box.innerHTML="<div class='pr-ref-empty'>Users loading...</div>";
+    try{
+        const users=await PR_getAllUsers();
+        const q=String(document.getElementById("prAdminUserSearch")?.value||"").trim().toLowerCase();
+        const filtered=showAll||!q?users:users.filter(u=>[u.id,u.telegramId,u.username,u.name].some(v=>String(v||"").toLowerCase().includes(q)));
+        filtered.sort((a,b)=>String(a.name||a.username||a.id).localeCompare(String(b.name||b.username||b.id)));
+        if(count)count.innerText=`মোট user: ${users.length} • দেখানো হচ্ছে: ${filtered.length}`;
+        box.innerHTML=filtered.length?filtered.slice(0,200).map(u=>{
+            const ref=String(u.referrerId||"").trim()||"—";
+            return `<div class="pr-admin-user-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>${PR_escapeHtml(u.name||u.username||"User")}</b><div style="font-size:10px;color:var(--muted)">@${PR_escapeHtml(String(u.username||"").replace(/^@/,""))} • ID: ${PR_escapeHtml(u.telegramId||u.id)}</div></div><span class="pr-badge-chip ${u.isVip?'manual':''}">${u.isVip?'👑 VIP':'FREE'}</span></div><div class="pr-admin-user-grid"><div>Balance: <b>৳${Number(u.balance||0).toFixed(2)}</b></div><div>Referrer: <b>${PR_escapeHtml(ref)}</b></div><div>Direct Ref: <b>${Number(u.directRefCount||0)}</b></div><div>Total Ref: <b>${Number(u.totalRef||0)}</b></div></div><div class="pr-admin-user-actions"><button class="pr-btn warning" onclick="PR_adminEditUser('${String(u.id).replace(/'/g,"\'")}')"><i class="fas fa-pen"></i> Edit</button><button class="pr-btn" onclick="PR_adminShowUserNetwork('${String(u.id).replace(/'/g,"\'")}')"><i class="fas fa-sitemap"></i> Referral Network</button></div></div>`;}).join(""):"<div class='pr-ref-empty'>কোনো user পাওয়া যায়নি।</div>";
+    }catch(e){console.error("Admin users:",e);box.innerHTML="<div class='pr-ref-empty'>User details load failed.</div>";}
+};
+
+window.PR_adminEditUser=async function(id){
+    if(!PR_isAdmin()||!PR_db)return;
+    try{
+        const ref=PR_db.collection("users").doc(String(id)),snap=await ref.get();if(!snap.exists)throw new Error("USER_NOT_FOUND");
+        const u=snap.data()||{};
+        const html=`<div style="text-align:left"><label>Name</label><input id="swUserName" class="swal2-input" value="${PR_escapeHtml(u.name||"")}"><label>Username</label><input id="swUserUsername" class="swal2-input" value="${PR_escapeHtml(String(u.username||"").replace(/^@/,""))}"><label>Telegram ID</label><input id="swUserTelegramId" class="swal2-input" value="${PR_escapeHtml(u.telegramId||id)}"><label>Balance</label><input id="swUserBalance" class="swal2-input" type="number" step="0.01" value="${Number(u.balance||0)}"><label>Referrer ID / Telegram ID</label><input id="swUserReferrerId" class="swal2-input" value="${PR_escapeHtml(u.referrerId||"")}" placeholder="Missing referral হলে এখানে ID দিন"><label>Referrer Name</label><input id="swUserReferrerName" class="swal2-input" value="${PR_escapeHtml(u.referrerName||"")}"><label style="display:block;margin:8px 0"><input id="swUserVip" type="checkbox" ${u.isVip?'checked':''}> VIP Active</label></div>`;
+        const r=await Swal.fire({title:"Edit User",html,focusConfirm:false,showCancelButton:true,confirmButtonText:"Save Changes",preConfirm:()=>({name:document.getElementById("swUserName").value.trim(),username:document.getElementById("swUserUsername").value.trim().replace(/^@/,"").toLowerCase(),telegramId:document.getElementById("swUserTelegramId").value.trim(),balance:Number(document.getElementById("swUserBalance").value||0),referrerId:document.getElementById("swUserReferrerId").value.trim(),referrerName:document.getElementById("swUserReferrerName").value.trim(),isVip:document.getElementById("swUserVip").checked})});
+        if(!r.isConfirmed)return;
+        if(!r.value.name)throw new Error("Name দিন");if(r.value.balance<0)throw new Error("Balance 0-এর কম হতে পারবে না");
+        let refName=r.value.referrerName;
+        if(r.value.referrerId){
+            const rs=await PR_db.collection("users").doc(String(r.value.referrerId)).get();
+            if(rs.exists)refName=String(rs.data()?.name||rs.data()?.username||r.value.referrerId);
+        }else refName="";
+        await ref.update({name:r.value.name,username:r.value.username,telegramId:r.value.telegramId||String(id),balance:Number(r.value.balance.toFixed(2)),referrerId:r.value.referrerId,referrerName:refName,isVip:r.value.isVip,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        if(String(PR_currentUser.id)===String(id)){Object.assign(PR_currentUser,{...r.value,referrerName:refName,id:String(id)});PR_updateUI();PR_loadDirectReferrals();}
+        await PR_adminLoadUsers(true);
+        Swal.fire("Saved","User details update হয়েছে। Missing referral ও balance-ও update হয়েছে।","success");
+    }catch(e){console.error("Admin edit user:",e);Swal.fire("Error",e.message||"User update failed","error");}
+};
+
+window.PR_adminShowUserNetwork=async function(id){
+    if(!PR_isAdmin()||!PR_db)return;
+    try{
+        const levels=await PR_getReferralLevelsForUser(id),labels=["Level 1","Level 2","Level 3"];
+        const html=levels.map((arr,i)=>`<div class="pr-admin-ref-level"><b>${labels[i]}: ${arr.length} জন</b><div style="margin-top:5px">${arr.slice(0,100).map(u=>`${PR_escapeHtml(u.name||u.username||"User")} <span style="color:var(--muted)">(${PR_escapeHtml(u.id)})</span>`).join(", ")||"কেউ নেই"}</div></div>`).join("");
+        await Swal.fire({title:"3-Level Referral Network",html,confirmButtonText:"Close"});
+    }catch(e){Swal.fire("Error",e.message||"Network load failed","error");}
+};
+
 /* =========================================================
    ADMIN MANUAL BADGES
    ========================================================= */
@@ -3806,7 +3886,7 @@ window.PR_transferBalance = async function(){
    LEADERBOARD
    ========================================================= */
 
-async function PR_loadLeaderboard(period="daily"){
+async function PR_loadLeaderboard(period="all"){
     const container=document.getElementById("prLeaderboardList");
     if(!container)return;
     try{
@@ -3815,79 +3895,40 @@ async function PR_loadLeaderboard(period="daily"){
             const snapshot=await PR_db.collection("users").get();
             snapshot.forEach(doc=>sourceUsers.push({id:String(doc.id),...(doc.data()||{})}));
         }
-
         const byId=new Map(sourceUsers.map(u=>[String(u.id),u]));
-        if(Array.isArray(PR_IMPORTED_USER_DATA)){
-            PR_IMPORTED_USER_DATA.forEach(u=>{
-                const id=String(u.id||"");
-                if(id&&!byId.has(id))byId.set(id,{...u,id});
-            });
-        }
+        if(Array.isArray(PR_IMPORTED_USER_DATA))PR_IMPORTED_USER_DATA.forEach(u=>{const id=String(u.id||"");if(id&&!byId.has(id))byId.set(id,{...u,id});});
         const all=[...byId.values()];
         const children=new Map();
-        all.forEach(u=>{
-            const r=String(u.referrerId||"").trim();
-            if(!r)return;
-            if(!children.has(r))children.set(r,[]);
-            children.get(r).push(u);
-        });
-
-        // Leaderboard score = actual referral count in the 3-level network.
-        // This is calculated from referrerId links, not from stored totalRef fields.
+        all.forEach(u=>{const r=String(u.referrerId||"").trim();if(!r)return;if(!children.has(r))children.set(r,[]);children.get(r).push(u);});
         const referralStats=(rootId)=>{
-            const seen=new Set([String(rootId)]);
-            let frontier=[String(rootId)],total=0,levels=[0,0,0];
+            const seen=new Set([String(rootId)]),levels=[0,0,0];let frontier=[String(rootId)];
             for(let level=0;level<3;level++){
                 const next=[];
                 for(const parent of frontier){
                     for(const u of (children.get(String(parent))||[])){
-                        const id=String(u.id||"");
-                        if(!id||seen.has(id))continue;
-                        seen.add(id);next.push(id);levels[level]++;total++;
+                        const id=String(u.id||"");if(!id||seen.has(id))continue;
+                        seen.add(id);next.push(id);levels[level]++;
                     }
                 }
                 frontier=[...new Set(next)];
             }
-            return {total,levels};
+            return {total:levels[0]+levels[1]+levels[2],levels};
         };
-
-        const users=all.map(u=>{
-            const st=referralStats(u.id);
-            return {...u,totalRef:st.total,refLevels:st.levels,score:st.total};
-        }).filter(u=>Number(u.score||0)>0);
-
+        const users=all.map(u=>{const st=referralStats(u.id);return {...u,totalRef:st.total,refLevels:st.levels,score:st.total};});
         users.sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.name||a.username||a.id).localeCompare(String(b.name||b.username||b.id)));
-
-        const top=users.slice(0,50);
+        const rankById=new Map(users.map((u,i)=>[String(u.id),i+1]));
+        const top25=users.slice(0,25);
         const me=users.find(u=>String(u.id)===String(PR_currentUser.id)||String(u.telegramId||"")===String(PR_currentUser.telegramId||""));
         const escape=window.PR_escapeHtml||((x)=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])));
-        const avatar=(u,cls="pr-lb-avatar")=>{
-            const photo=String(u.photoUrl||"").trim();
-            const initial=String(u.name||u.username||"U").trim().slice(0,1).toUpperCase();
-            return photo?`<img class="${cls}" src="${escape(photo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls} pr-lb-fallback" style="display:none">${escape(initial)}</span>`:`<span class="${cls} pr-lb-fallback">${escape(initial)}</span>`;
-        };
-        const badge=(u)=>{
-            const manual=Array.isArray(u.manualBadges)?u.manualBadges:[];
-            if(manual.length)return escape(String(manual[0]));
-            if(Number(u.totalRef||0)>=20)return "VIP";
-            if(Number(u.totalRef||0)>=10)return "PRO";
-            if(Number(u.totalRef||0)>=5)return "N7";
-            return "N7";
-        };
+        const avatar=(u,cls="pr-lb-avatar")=>{const photo=String(u.photoUrl||"").trim(),initial=String(u.name||u.username||"U").trim().slice(0,1).toUpperCase();return photo?`<img class="${cls}" src="${escape(photo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls} pr-lb-fallback" style="display:none">${escape(initial)}</span>`:`<span class="${cls} pr-lb-fallback">${escape(initial)}</span>`;};
+        const badge=(u)=>{const manual=Array.isArray(u.manualBadges)?u.manualBadges:[];if(manual.length)return escape(String(manual[0]));if(Number(u.totalRef||0)>=20)return "VIP";if(Number(u.totalRef||0)>=10)return "PRO";return "N7";};
         const flag=(u)=>String(u.countryFlag||u.flag||"🇧🇩").trim()||"🇧🇩";
-        const podiumData=[top[1]||null,top[0]||null,top[2]||null];
-        const podium=podiumData.map((u,slot)=>{
-            if(!u)return `<div class="pr-lb-podium-card empty"></div>`;
-            const rank=slot===1?1:(slot===0?2:3),cls=rank===1?"p1":rank===2?"p2":"p3";
-            return `<div class="pr-lb-podium-card ${cls}"><div class="pr-lb-crown">♛</div><div class="pr-lb-top-label">TOP ${rank}</div>${avatar(u,"pr-lb-podium-avatar")}<div class="pr-lb-podium-name">${escape(u.name||u.username||"User")}</div><div class="pr-lb-mini-badge">${escape(badge(u))}</div><div class="pr-lb-podium-score">${Number(u.score||0)} <span>👥</span></div></div>`;
-        }).join("");
-        const rows=top.slice(3,30).map((u,i)=>`<div class="pr-lb-row"><div class="pr-lb-rank">${i+4}</div>${avatar(u)}<div class="pr-lb-user"><div class="pr-lb-name">${escape(u.name||u.username||"User")}</div><div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(u))}</span> <span>${flag(u)}</span></div></div><div class="pr-lb-score">${Number(u.score||0)} <span>👥</span></div></div>`).join("");
+        const podiumData=[top25[1]||null,top25[0]||null,top25[2]||null];
+        const podium=podiumData.map((u,slot)=>{if(!u)return `<div class="pr-lb-podium-card empty"></div>`;const rank=slot===1?1:(slot===0?2:3),cls=rank===1?"p1":rank===2?"p2":"p3";return `<div class="pr-lb-podium-card ${cls}"><div class="pr-lb-crown">♛</div><div class="pr-lb-top-label">TOP ${rank}</div>${avatar(u,"pr-lb-podium-avatar")}<div class="pr-lb-podium-name">${escape(u.name||u.username||"User")}</div><div class="pr-lb-mini-badge">${escape(badge(u))}</div><div class="pr-lb-podium-score">${Number(u.score||0)} <span>👥</span></div></div>`;}).join("");
+        const rows=top25.slice(3,25).map((u,i)=>`<div class="pr-lb-row"><div class="pr-lb-rank">${i+4}</div>${avatar(u)}<div class="pr-lb-user"><div class="pr-lb-name">${escape(u.name||u.username||"User")}</div><div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(u))}</span> <span>${flag(u)}</span></div></div><div class="pr-lb-score">${Number(u.score||0)} <span>👥</span></div></div>`).join("");
         let currentRow="";
-        if(me){
-            const rank=users.findIndex(u=>String(u.id)===String(me.id))+1;
-            currentRow=`<div class="pr-lb-current"><div class="pr-lb-current-rank">${rank>30?"30+":rank}</div>${avatar(me,"pr-lb-current-avatar")}<div class="pr-lb-user"><div class="pr-lb-name">${escape(me.name||me.username||"You")}</div><div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(me))}</span> <span>${flag(me)}</span></div></div><div class="pr-lb-score">${Number(me.score||0)} <span>👥</span></div></div>`;
-        }
-        container.innerHTML=`<div class="pr-lb-shell"><div class="pr-lb-tabs"><button class="active" onclick="PR_loadLeaderboard('all')">All Time</button><span>3-Level Referrals ↗</span></div><div class="pr-lb-hero"><div class="pr-lb-wings">〰〰〰♛〰〰〰</div><div class="pr-lb-podium">${podium}</div><div class="pr-lb-ornament">♛</div></div><div class="pr-lb-list">${rows||`<div class="pr-leader-empty">কোনো referral leaderboard data নেই।</div>`}</div>${currentRow}</div>`;
+        if(me){const rank=rankById.get(String(me.id))||users.length;currentRow=`<div class="pr-lb-current"><div class="pr-lb-current-rank">${rank}</div>${avatar(me,"pr-lb-current-avatar")}<div class="pr-lb-user"><div class="pr-lb-name">${escape(me.name||me.username||"You")}</div><div class="pr-lb-meta"><span class="pr-lb-badge">${escape(badge(me))}</span> <span>${flag(me)}</span></div></div><div class="pr-lb-score">${Number(me.score||0)} <span>👥</span></div></div>`;}
+        container.innerHTML=`<div class="pr-lb-shell"><div class="pr-lb-tabs"><button class="active">All Time</button><span>3-Level Referrals ↗</span></div><div class="pr-lb-no-banner"><div class="pr-lb-podium">${podium}</div></div><div class="pr-lb-list">${rows||`<div class="pr-leader-empty">কোনো referral leaderboard data নেই।</div>`}</div>${currentRow}</div>`;
     }catch(error){console.error("Leaderboard Error:",error);container.innerHTML="<div class='pr-leader-empty'>Leaderboard load করা যায়নি।</div>";}
 }
 
@@ -4065,7 +4106,7 @@ window.PR_joinTask=async function(taskId,link,taskRewardArg,isPaid){
 
 // Admin initialization additions.
 const _PR_setupAdminUI=PR_setupAdminUI;
-PR_setupAdminUI=function(){_PR_setupAdminUI();if(PR_isAdmin()){setTimeout(()=>{PR_loadAdminVipPayments();PR_adminLoadApprovedTasks();},300);}};
+PR_setupAdminUI=function(){_PR_setupAdminUI();if(PR_isAdmin()){setTimeout(()=>{PR_loadAdminVipPayments();PR_adminLoadApprovedTasks();PR_adminLoadUsers(true);},300);}};
 
 // Badge at the end of username on home/profile.
 const _PR_oldHomeNameUpdate=PR_updateUI;
