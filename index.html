@@ -1420,7 +1420,7 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
         </div>
         <div class="pr-card pr-profile-card">
             <img id="prProfileAvatar" class="pr-profile-large" alt="Telegram Profile Photo">
-            <div style="color:var(--muted);font-size:12px;margin-bottom:10px"><i class="fab fa-telegram"></i> Telegram Profile Photo</div><div id="prFirebaseStatus" style="color:#ffcf70;font-size:11px;margin:4px 0 8px">Firebase account loading...</div>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:10px"><i class="fab fa-telegram"></i> Telegram Profile Photo</div><div id="prFirebaseStatus" style="display:none">Firebase</div>
             <h3 id="prProfileName" style="margin:4px 0">Guest User</h3>
             <div id="prProfileUsername" style="color:var(--muted);font-size:13px">@username</div>
 
@@ -1434,7 +1434,31 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
                 <div id="prReferrerName" style="color:var(--muted);margin-top:5px">কেউ নেই</div>
 
             </div>
-        </div>        <div class="pr-card pr-profile-withdraw">
+        </div>
+
+        <div class="pr-card" id="prVipCard">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <h3 style="margin:0"><i class="fas fa-crown"></i> VIP Membership</h3>
+                <span id="prVipStatusBadge" class="pr-badge-chip manual">FREE</span>
+            </div>
+            <div id="prVipStatusText" style="color:var(--muted);font-size:12px;margin:8px 0 12px">VIP ৳200 — Lifetime • 50 ads/day • Paid Tasks</div>
+            <button class="pr-btn full" onclick="PR_openVipPayment()"><i class="fas fa-gem"></i> VIP কিনুন — ৳200</button>
+            <div id="prVipPaymentForm" style="display:none;margin-top:12px">
+                <div class="pr-card" style="background:rgba(108,92,231,.08);padding:12px">
+                    <b>Payment Details</b>
+                    <div style="font-size:12px;color:var(--muted);margin:7px 0;line-height:1.6">bKash Send Money: <b>01949220005</b><br>Nagad Send Money: <b>01401913191</b><br>Amount: <b>৳200</b></div>
+                    <select id="prVipPaymentMethod" class="pr-input"><option value="">Payment Method</option><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select>
+                    <input id="prVipAmount" class="pr-input" type="number" value="200" min="200" step="1" placeholder="Amount">
+                    <input id="prVipTrx" class="pr-input" maxlength="80" placeholder="TRX / Transaction Number">
+                    <input id="prVipSender" class="pr-input" maxlength="30" placeholder="Sender Number">
+                    <input id="prVipProof" class="pr-input" type="file" accept="image/*">
+                    <input id="prVipProofUrl" class="pr-input" type="url" placeholder="Proof Screenshot URL (optional)">
+                    <div style="display:flex;gap:8px"><button class="pr-btn success" onclick="PR_submitVipPayment()">Submit Payment</button><button class="pr-btn" style="background:#444" onclick="PR_closeVipPayment()">Cancel</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pr-card pr-profile-withdraw">
             <h3 style="margin-top:0"><i class="fas fa-wallet"></i> Withdraw & Balance Transfer</h3>
 <h2><i class="fas fa-wallet"></i> Withdraw</h2>
         <div class="pr-card">
@@ -1545,8 +1569,8 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
             <div class="pr-leaderboard-hero">
                 <div class="pr-hero-coins">✦ &nbsp; ✦ &nbsp; ✦</div>
                 <div class="pr-hero-crown">♛</div>
-                <div class="pr-hero-title">REFERRAL ROYAL LEAGUE</div>
-                <div class="pr-hero-subtitle">Top referrers • Earn more • Rise higher</div>
+                <div class="pr-hero-title">MONTHLY LEADERBOARD</div>
+                <div class="pr-hero-subtitle">Monthly earning & referral activity</div>
             </div>
 <div id="prLeaderboardList">
                 <div style="text-align:center;color:var(--muted)">
@@ -1599,7 +1623,7 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
             <textarea id="prAdminTaskDetails" class="pr-input" maxlength="1000" rows="3" placeholder="Task বিস্তারিত"></textarea>
             <div id="prAdminTaskTotal" style="font-weight:800;margin:5px 0 12px">মোট বাজেট: ৳0.00</div>
             <button class="pr-btn warning full" onclick="PR_adminCreateTask()"><i class="fas fa-plus"></i> Admin Task Add</button>
-            <div id="prAdminPendingTasks" style="margin-top:15px"></div>
+            <div id="prAdminPendingTasks" style="margin-top:15px"></div><div style="font-weight:700;margin-top:16px">Approved / Live Tasks</div><div id="prAdminApprovedTasks" style="margin-top:10px"></div>
         </div>
 
         <div class="pr-card pr-admin-badge-manager">
@@ -1627,6 +1651,12 @@ filter:drop-shadow(0 7px 8px rgba(0,0,0,.35))}
             </div>
             <div id="prAdminBadgeStatus" style="color:var(--muted);font-size:12px;margin-top:10px"></div>
             <div id="prAdminBadgeList" style="margin-top:8px"></div>
+        </div>
+
+        <div class="pr-card">
+            <div style="font-weight:700"><i class="fas fa-crown"></i> VIP Payment Manager</div>
+            <div style="color:var(--muted);font-size:12px;margin:6px 0 12px">৳200 lifetime VIP payment approve/reject করুন। Approve করলে user-এর VIP automatically active হবে।</div>
+            <div id="prAdminVipPayments"><div class="pr-ref-empty">Loading...</div></div>
         </div>
 
         <div class="pr-card">
@@ -1759,6 +1789,11 @@ const PR_SETTINGS = {
 
     adReward:
     1,
+
+    freeAdsPerDay:30,
+    vipAdsPerDay:50,
+    adCooldownSeconds:20,
+    vipPrice:200,
 
     taskBonusPercent:
     5,
@@ -2267,7 +2302,8 @@ async function PR_loadUser(){
                 photoUrl:PR_currentUser.photoUrl||"",
                 balance:0,totalRef:0,directRefCount:0,referralBonusTotal:0,
                 referrerId:resolvedReferrerId,referrerName:resolvedReferrerName,
-                totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,totalWithdrawn:0,
+                totalIncome:0,todayIncome:0,incomeDay:"",adsWatched:0,dailyAdsWatched:0,adDay:"",totalWithdrawn:0,
+                isVip:false,vipActivatedAt:"",
                 taskBonusTotal:0,joinDate:new Date().toISOString(),completedTasks:[],
                 completedTasksCount:0,accountActivated:false,activeDirectReferrals:0,
                 level1Commission:0,level2Commission:0,level3Commission:0,videoCountSincePopup:0,
@@ -2303,6 +2339,10 @@ async function PR_loadUser(){
             todayIncome:Number(data.todayIncome??0),
             incomeDay:data.incomeDay||"",
             adsWatched:Number(data.adsWatched??0),
+            dailyAdsWatched:Number(data.dailyAdsWatched??0),
+            adDay:String(data.adDay||""),
+            isVip:!!data.isVip,
+            vipActivatedAt:data.vipActivatedAt||"",
             totalWithdrawn:Number(data.totalWithdrawn??0),
             taskBonusTotal:Number(data.taskBonusTotal??0),
             joinDate:data.joinDate||data.createdAt||"",
@@ -2329,7 +2369,7 @@ async function PR_loadUser(){
         PR_createReferralLink();
         const status=document.getElementById("prFirebaseStatus");
         if(status){
-            status.innerText=`Firebase account: ${PR_currentUser.id} • @${PR_currentUser.username||"no_username"} • Balance ৳${Number(PR_currentUser.balance||0).toFixed(2)} • Ref ${Number(PR_currentUser.totalRef||PR_currentUser.directRefCount||0)}`;
+            status.innerText=""; status.style.display="none";
         }
     }catch(error){
         console.error("Load User:",error);
@@ -2351,6 +2391,8 @@ async function PR_loadUser(){
     PR_loadAdminBanners();
     PR_loadApprovedTasks();
     if(PR_isAdmin())PR_loadPendingAdminTasks();
+    if(PR_isAdmin()&&window.PR_adminLoadApprovedTasks)PR_adminLoadApprovedTasks();
+    if(PR_isAdmin()&&window.PR_loadAdminVipPayments)PR_loadAdminVipPayments();
     if(PR_isAdmin())PR_loadAdminBalanceHistory();
     if(PR_isAdmin())PR_loadAdminWithdrawals();
     PR_renderBadges();
@@ -2783,7 +2825,28 @@ async function PR_loadDirectReferrals(){
     const list=document.getElementById("prDirectReferralList");if(!list||!PR_db||!PR_currentUser.id)return;
     try{const levels=await PR_getReferralLevels(),direct=levels[0]||[];PR_currentUser.directRefCount=direct.length;PR_currentUser.totalRef=levels.reduce((n,a)=>n+a.length,0);const rr=PR_getCurrentUserRef();if(rr)rr.update({directRefCount:direct.length,totalRef:PR_currentUser.totalRef}).catch(()=>{});if(!direct.length){list.innerHTML='<div class="pr-direct-empty">এখনও কোনো direct referral নেই।</div>';return;}list.innerHTML=direct.map((u,i)=>{const name=u.name||u.username||"User",un=u.username?"@"+u.username:"Telegram ID: "+u.id,initials=String(name).trim().slice(0,2).toUpperCase()||"U";return `<div class="pr-direct-user"><div class="pr-direct-rank">${i+1}</div><div class="pr-direct-avatar" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">${PR_escapeHtml(initials)}</div><div class="pr-direct-info"><div class="pr-direct-name">${PR_escapeHtml(name)}</div><div class="pr-direct-username">${PR_escapeHtml(un)}</div><div class="pr-direct-joined">Joined: ${PR_escapeHtml(PR_formatDate(u.joinDate||u.createdAt))}</div></div><div class="pr-direct-earning">L1 5%</div></div>`}).join("");PR_updateUI();}catch(e){console.error("Direct referral list:",e);list.innerHTML='<div class="pr-direct-empty">Referral data load করা যায়নি।</div>';}}
 async function PR_getReferralLevels(){
-    if(!PR_db||!PR_currentUser.id)return[[],[],[]];const snap=await PR_db.collection("users").get(),all=[];snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));const byRef=new Map();all.forEach(u=>{const r=String(u.referrerId||"").trim();if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});const levels=[[],[],[]],seen=new Set([String(PR_currentUser.id)]);let frontier=[String(PR_currentUser.id),String(PR_currentUser.telegramId||"")];if(PR_currentUser.username){frontier.push("u:"+String(PR_currentUser.username).replace(/^@/,"").toLowerCase());frontier.push(String(PR_currentUser.username).replace(/^@/,"").toLowerCase());}for(let i=0;i<3;i++){const next=[];for(const key of frontier){for(const u of(byRef.get(key)||[])){if(seen.has(u.id))continue;seen.add(u.id);levels[i].push(u);next.push(u.id);if(u.telegramId)next.push(String(u.telegramId));if(u.username){next.push("u:"+String(u.username).replace(/^@/,"").toLowerCase());next.push(String(u.username).replace(/^@/,"").toLowerCase());}}}frontier=[...new Set(next)];}return levels;}
+    if(!PR_db||!PR_currentUser.id)return[[],[],[]];
+    const snap=await PR_db.collection("users").get();
+    const all=[]; snap.forEach(d=>all.push({id:String(d.id),...(d.data()||{})}));
+    const byRef=new Map();
+    all.forEach(u=>{const r=String(u.referrerId||"").trim();if(r){if(!byRef.has(r))byRef.set(r,[]);byRef.get(r).push(u);}});
+    const levels=[[],[],[]];
+    const seen=new Set([String(PR_currentUser.id)]);
+    let frontier=[String(PR_currentUser.id)];
+    for(let level=0;level<3;level++){
+        const next=[];
+        for(const parentId of frontier){
+            const children=byRef.get(String(parentId))||[];
+            for(const u of children){
+                const id=String(u.id);
+                if(!id||seen.has(id))continue;
+                seen.add(id); levels[level].push(u); next.push(id);
+            }
+        }
+        frontier=[...new Set(next)];
+    }
+    return levels;
+}
 async function PR_checkActivation(){
     if(!PR_db||!PR_currentUser.id)return false;
     try{
@@ -2856,6 +2919,36 @@ function PR_renderTasks(){
             </div>`;
         container.appendChild(card);
     });
+}
+
+/* =========================================================
+   CENTRAL REWARD CREDIT / DUPLICATE PROTECTION
+   ========================================================= */
+async function PR_creditCurrentUser(amount,type,extra={}){
+    if(!PR_db||!PR_currentUser.id)throw new Error("FIREBASE_UNAVAILABLE");
+    const value=Number(amount||0); if(value<=0)throw new Error("INVALID_REWARD");
+    const ref=PR_getCurrentUserRef();
+    const txId=String(type||"reward")+"-"+String(PR_currentUser.id)+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);
+    let result=null;
+    await PR_db.runTransaction(async tx=>{
+        const snap=await tx.get(ref); if(!snap.exists)throw new Error("USER_NOT_FOUND");
+        const data=snap.data()||{};
+        const before=Number(data.balance||0),after=Number((before+value).toFixed(2));
+        const day=new Date().toISOString().slice(0,10);
+        const today=String(data.incomeDay||"")===day?Number(data.todayIncome||0):0;
+        const updates={balance:after,totalIncome:Number(data.totalIncome||0)+value,todayIncome:today+value,incomeDay:day,...extra};
+        tx.update(ref,updates);
+        tx.set(PR_db.collection("earningTransactions").doc(txId),{transactionId:txId,type,userId:String(PR_currentUser.id),amount:value,beforeBalance:before,afterBalance:after,status:"completed",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        result={before,after};
+    });
+    PR_currentUser.balance=Number(result.after); PR_currentUser.totalIncome=Number(PR_currentUser.totalIncome||0)+value;
+    const day=new Date().toISOString().slice(0,10); PR_currentUser.todayIncome=String(PR_currentUser.incomeDay||"")===day?Number(PR_currentUser.todayIncome||0)+value:value; PR_currentUser.incomeDay=day;
+    Object.keys(extra||{}).forEach(k=>{ if(typeof extra[k] === "number") PR_currentUser[k]=extra[k]; });
+    return result;
+}
+
+async function PR_retryPendingRewards(){
+    try{localStorage.removeItem("pr_pending_rewards");}catch(e){}
 }
 
 /* =========================================================
@@ -2983,7 +3076,7 @@ window.PR_adminBroadcast=async function(){
  if(!PR_isAdmin())return Swal.fire("Access Denied","Admin access নেই।","error");
  const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim(), message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim(), status=document.getElementById("prAdminStatus");
  if(!title||!message)return Swal.fire("Missing","Title এবং message দিন।","warning");
- if(PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE")return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
+ if(PR_BOT_TOKEN==="8706433846:AAEbC4PMaQGTcYHwyUsorQSeq9LWNx0hDl4")return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
  try{const users=await PR_getAllUsers(), targets=users.filter(u=>/^\d+$/.test(String(u.id))); let sent=0,failed=0; if(!targets.length)return Swal.fire("No Users","Telegram ID পাওয়া যায়নি।","info");
   for(const u of targets){try{const r=await fetch(`https://api.telegram.org/bot${PR_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:Number(u.id),text:`${title}\n\n${message}`})}); const d=await r.json(); d.ok?sent++:failed++;}catch(e){failed++;} if(status)status.innerText=`Sent: ${sent} | Failed: ${failed} / ${targets.length}`; await new Promise(r=>setTimeout(r,50));}
   Swal.fire("Broadcast Complete",`Sent: ${sent}<br>Failed: ${failed}`,failed?"warning":"success");
@@ -2994,7 +3087,7 @@ window.PR_adminBroadcast=async function(){
    ========================================================= */
 window.PR_adminSendSingle = async function(){
     if(!PR_isAdmin()) return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
+    if(PR_BOT_TOKEN==="8706433846:AAEbC4PMaQGTcYHwyUsorQSeq9LWNx0hDl4") return Swal.fire("Bot Token Missing","কোডের উপরে PR_BOT_TOKEN-এ BotFather token বসান।","warning");
 
     const username=(document.getElementById("prAdminSingleUsername")?.value||"").trim().replace(/^@/,"").toLowerCase();
     const message=(document.getElementById("prAdminSingleMessage")?.value||"").trim();
@@ -3051,7 +3144,7 @@ window.PR_adminSendSingle = async function(){
    ========================================================= */
 window.PR_adminBroadcastPhoto=async function(){
     if(!PR_isAdmin()) return Swal.fire("Access Denied","Admin access নেই।","error");
-    if(PR_BOT_TOKEN==="PASTE_YOUR_BOT_TOKEN_HERE") return Swal.fire("Bot Token Missing","PR_BOT_TOKEN-এ BotFather token বসাতে হবে।","warning");
+    if(PR_BOT_TOKEN==="8706433846:AAEbC4PMaQGTcYHwyUsorQSeq9LWNx0hDl4") return Swal.fire("Bot Token Missing","PR_BOT_TOKEN-এ BotFather token বসাতে হবে।","warning");
     const title=(document.getElementById("prAdminNotifyTitle")?.value||"").trim();
     const message=(document.getElementById("prAdminNotifyMessage")?.value||"").trim();
     const file=document.getElementById("prAdminBroadcastPhoto")?.files?.[0]||null;
@@ -3166,92 +3259,51 @@ function(timeoutMs = 20000){
     });
 };
 
-window.PR_watchAd =
-async function(){
-    // Keep the ad request inside the user's tap gesture on mobile Telegram WebView.
-    if(typeof window.show_11697562 === "function"){
-        return PR_showMonetagAd();
+window.PR_waitForMonetag=function(timeoutMs=20000){return new Promise(resolve=>{if(typeof window.show_11697562==="function"){resolve(true);return;}const started=Date.now();const timer=setInterval(()=>{if(typeof window.show_11697562==="function"){clearInterval(timer);resolve(true);}else if(Date.now()-started>=timeoutMs){clearInterval(timer);resolve(false);}},200);});};
+
+function PR_getAdLimit(){return PR_currentUser.isVip?Number(PR_SETTINGS.vipAdsPerDay||50):Number(PR_SETTINGS.freeAdsPerDay||30);}
+function PR_syncDailyAdCount(){const today=new Date().toISOString().slice(0,10);if(String(PR_currentUser.adDay||"")!==today){PR_currentUser.adDay=today;PR_currentUser.dailyAdsWatched=0;const ref=PR_getCurrentUserRef();if(ref)ref.update({adDay:today,dailyAdsWatched:0}).catch(()=>{});}}
+
+window.PR_watchAd=async function(){
+    if(PR_showMonetagAd.busy)return;
+    PR_syncDailyAdCount();
+    const limit=PR_getAdLimit();
+    if(Number(PR_currentUser.dailyAdsWatched||0)>=limit){
+        Swal.fire("Daily Limit",`আজকের ${PR_currentUser.isVip?"VIP":"Free"} limit ${limit}টি ad শেষ হয়েছে।`,`info`); return;
     }
-    const isTelegram=!!(window.Telegram && window.Telegram.WebApp);
+    const last=Number(localStorage.getItem("pr_last_ad_time")||0), wait=Math.max(0,Number(PR_SETTINGS.adCooldownSeconds||20)*1000-(Date.now()-last));
+    if(wait>0){Swal.fire("Please Wait",`পরবর্তী ad দেখতে আরও ${Math.ceil(wait/1000)} সেকেন্ড অপেক্ষা করুন।`,"info");return;}
     const ready=await PR_waitForMonetag(20000);
-    if(!ready){
-        Swal.fire({
-            title:"Ad Load হয়নি",
-            html:(isTelegram
-                ? "Telegram-এ Ad SDK load হয়নি।<br><small>App close করে আবার খুলুন এবং HTTPS/domain/SDK zone 11697562 পরীক্ষা করুন।</small>"
-                : "Ad SDK load হয়নি।<br><small>HTTPS, domain verification এবং zone 11697562 active আছে কি না দেখুন।</small>"),
-            icon:"warning"
-        });
-        return;
-    }
+    if(!ready){Swal.fire("Ad Load হয়নি","Ad SDK load হয়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।","warning");return;}
     return PR_showMonetagAd();
 };
 
 async function PR_showMonetagAd(){
-    if(PR_showMonetagAd.busy)return;
-    PR_showMonetagAd.busy=true;
-
+    if(PR_showMonetagAd.busy)return; PR_showMonetagAd.busy=true;
     try{
+        PR_syncDailyAdCount();
+        const limit=PR_getAdLimit();
+        if(Number(PR_currentUser.dailyAdsWatched||0)>=limit)throw new Error("DAILY_LIMIT");
         if(typeof window.show_11697562!=="function")throw new Error("AD_SDK_NOT_READY");
-
-        // Monetag Rewarded Interstitial resolves when the rewarded ad flow completes.
-        // ymid ties the ad event to this Telegram user.
         const ymid=String(PR_currentUser.telegramId||PR_currentUser.id||"");
         await window.show_11697562({ymid});
-
-        // Do not fake-credit a rejected/no-fill ad. Credit only after SDK resolves.
         const reward=Number(PR_SETTINGS.adReward||1);
-        await PR_creditCurrentUser(reward,"ad_reward",{
-            adsWatched:firebase.firestore.FieldValue.increment(1)
-        });
-
-        PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1;
-        PR_currentUser.videoCountSincePopup=Number(PR_currentUser.videoCountSincePopup||0)+1;
-
-        if(PR_currentUser.videoCountSincePopup>=50){
-            PR_currentUser.videoCountSincePopup=0;
-            setTimeout(()=>PR_video50Popup(),250);
-        }
-
-        if(PR_currentUser.referrerId){
-            await PR_applyTaskBonus(
-                PR_currentUser.referrerId,
-                reward,
-                PR_currentUser.name||PR_currentUser.username||"User",
-                Date.now().toString(),
-                "ad"
-            );
-        }
-
+        const newDaily=Number(PR_currentUser.dailyAdsWatched||0)+1;
+        await PR_creditCurrentUser(reward,"ad_reward",{adsWatched:firebase.firestore.FieldValue.increment(1),dailyAdsWatched:firebase.firestore.FieldValue.increment(1),adDay:new Date().toISOString().slice(0,10)});
+        PR_currentUser.adsWatched=Number(PR_currentUser.adsWatched||0)+1; PR_currentUser.dailyAdsWatched=newDaily; PR_currentUser.adDay=new Date().toISOString().slice(0,10);
+        localStorage.setItem("pr_last_ad_time",String(Date.now()));
+        if(PR_currentUser.referrerId)await PR_applyTaskBonus(PR_currentUser.referrerId,reward,PR_currentUser.name||PR_currentUser.username||"User",Date.now().toString(),"ad");
         await PR_addActivity(PR_currentUser.username||PR_currentUser.name,"এডস দেখেছেন",reward);
         PR_updateUI();
-
-        Swal.fire({
-            title:"Ad Complete!",
-            text:"৳"+reward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",
-            icon:"success",
-            timer:1800,
-            showConfirmButton:false
-        });
-
+        Swal.fire({title:"Ad Complete!",text:"৳"+reward.toFixed(2)+" আপনার balance-এ যোগ হয়েছে।",icon:"success",timer:1600,showConfirmButton:false});
     }catch(error){
         console.error("Monetag / reward error:",error);
         const msg=String(error.message||error);
-
-        if(msg==="USER_NOT_FOUND"){
-            Swal.fire("Account Not Found","এই Telegram account-এর Firebase user পাওয়া যায়নি।","error");
-        }else if(msg==="FIREBASE_UNAVAILABLE"){
-            Swal.fire("Firebase Error","Firebase connection পাওয়া যাচ্ছে না।","error");
-        }else if(msg==="AD_SDK_NOT_READY"){
-            Swal.fire("Ad Load হয়নি","Monetag SDK এখনো load হয়নি। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।","warning");
-        }else if(msg.includes("permission-denied")||msg.includes("PERMISSION_DENIED")){
-            Swal.fire("Balance Write Blocked","Ad দেখা হয়েছে, কিন্তু Firebase Security Rules balance update আটকেছে। Rules publish করতে হবে।","error");
-        }else{
-            Swal.fire("Ad Failed","Monetag SDK ad complete করেনি / no-fill দিয়েছে। SDK resolve না করলে reward দেওয়া যাবে না।","error");
-        }
-    }finally{
-        PR_showMonetagAd.busy=false;
-    }
+        if(msg==="DAILY_LIMIT")Swal.fire("Daily Limit","আজকের ad limit শেষ হয়েছে।","info");
+        else if(msg==="AD_SDK_NOT_READY")Swal.fire("Ad Load হয়নি","Monetag SDK এখনো ready নয়।","warning");
+        else if(msg.includes("permission-denied")||msg.includes("PERMISSION_DENIED"))Swal.fire("Balance Update Failed","Firebase Security Rules balance update আটকেছে।","error");
+        else Swal.fire("Ad Failed","Ad complete হয়নি, তাই reward যোগ করা হয়নি।","warning");
+    }finally{PR_showMonetagAd.busy=false;}
 }
 
 function PR_video50Popup(){Swal.fire({title:"🎊 অভিনন্দন!",html:"আপনি ৫০টি ভিডিও দেখেছেন ❤️<br><br>আপনি কি আরও ভিডিও দেখা চালিয়ে যেতে আগ্রহী? 🤔",icon:"success",showCancelButton:true,confirmButtonText:"🟠 হ্যাঁ",cancelButtonText:"🔵 না"}).then(r=>{if(!r.isConfirmed)PR_goTab("prHome");});}
@@ -3699,13 +3751,18 @@ async function PR_loadLeaderboard(period="daily"){
             });
         }
 
+        let monthlyMap={};
+        if(period==="monthly" && PR_db){
+            const first=new Date(); first.setDate(1); first.setHours(0,0,0,0);
+            try{const ts=await PR_db.collection("earningTransactions").get();ts.forEach(d=>{const x=d.data()||{};let dt=x.createdAt?.toDate?x.createdAt.toDate():new Date(x.createdAt||0);if(dt>=first&&String(x.status||"")==="completed"){const uid=String(x.userId||"");monthlyMap[uid]=(monthlyMap[uid]||0)+Number(x.amount||0);}});}catch(e){console.warn("Monthly transaction aggregation:",e);}
+        }
         let users=[...byId.values()].map(u=>{
             const date=String(u.incomeDay||"");
             const score=period==="daily"
                 ? Number(u.todayIncome||0)
                 : period==="weekly"
                     ? Number(u.totalIncome||0)
-                    : Number(u.totalIncome||0);
+                    : Number(monthlyMap[String(u.id)]||0);
             const refs=Number(u.directRefCount??u.totalRef??0);
             return {...u,totalRef:refs,score};
         }).filter(u=>Number(u.score||0)>0 || Number(u.totalRef||0)>0);
@@ -3839,6 +3896,101 @@ window.addEventListener("beforeunload",function(){
     try{ if(PR_notificationUnsub) PR_notificationUnsub(); }catch(e){}
     try{ if(PR_activityUnsub) PR_activityUnsub(); }catch(e){}
 });
+
+/* =========================================================
+   VIP / TASK ADMIN / PROFILE UPGRADE LAYER
+   ========================================================= */
+
+function PR_renderVipState(){
+    const vip=!!PR_currentUser.isVip;
+    const badge=document.getElementById("prVipStatusBadge");
+    const text=document.getElementById("prVipStatusText");
+    if(badge){badge.textContent=vip?"VIP":"FREE";badge.style.background=vip?"linear-gradient(135deg,#f6c453,#ff8c00)":"rgba(255,255,255,.08)";badge.style.color=vip?"#241400":"#fff";}
+    if(text)text.textContent=vip?"VIP Active • Lifetime • 50 ads/day • Paid Tasks":"VIP ৳200 — Lifetime • 50 ads/day • Paid Tasks";
+    const btn=document.querySelector('#prVipCard > button'); if(btn)btn.innerHTML=vip?'<i class="fas fa-crown"></i> VIP Active':'<i class="fas fa-gem"></i> VIP কিনুন — ৳200';
+    if(vip && document.getElementById("prVipPaymentForm"))document.getElementById("prVipPaymentForm").style.display="none";
+}
+window.PR_openVipPayment=function(){if(PR_currentUser.isVip){Swal.fire("VIP Active","আপনার VIP lifetime active আছে।","success");return;}const f=document.getElementById("prVipPaymentForm");if(f)f.style.display="block";};
+window.PR_closeVipPayment=function(){const f=document.getElementById("prVipPaymentForm");if(f)f.style.display="none";};
+window.PR_submitVipPayment=async function(){
+    if(!PR_db||!PR_currentUser.id)return Swal.fire("Error","Firebase unavailable।","error");
+    if(PR_currentUser.isVip)return Swal.fire("VIP Active","আপনার VIP already active।","info");
+    const method=(document.getElementById("prVipPaymentMethod")?.value||"").trim();
+    const amount=Number(document.getElementById("prVipAmount")?.value||0);
+    const trx=(document.getElementById("prVipTrx")?.value||"").trim();
+    const sender=(document.getElementById("prVipSender")?.value||"").trim();
+    const proofUrl=(document.getElementById("prVipProofUrl")?.value||"").trim();
+    const proofFile=document.getElementById("prVipProof")?.files?.[0]||null;
+    if(!method||amount!==Number(PR_SETTINGS.vipPrice||200)||!trx||!sender)return Swal.fire("Missing","Payment method, ৳200, TRX এবং sender number দিন।","warning");
+    let proof=proofUrl;
+    if(proofFile){try{if(proofFile.size>2*1024*1024)return Swal.fire("File Too Large","Proof screenshot 2MB-এর মধ্যে দিন।","warning");const storageRef=firebase.storage().ref(`vipProofs/${PR_currentUser.id}/${Date.now()}-${proofFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`);const up=await storageRef.put(proofFile);proof=await up.ref.getDownloadURL();}catch(e){return Swal.fire("Upload Failed","Proof screenshot upload করা যায়নি।","error");}}
+    try{
+        const existing=await PR_db.collection("vipPayments").where("userId","==",String(PR_currentUser.id)).where("status","==","pending").limit(1).get();
+        if(!existing.empty)return Swal.fire("Pending","আপনার একটি VIP payment already pending আছে।","info");
+        await PR_db.collection("vipPayments").add({userId:String(PR_currentUser.id),telegramId:String(PR_currentUser.telegramId||PR_currentUser.id),username:String(PR_currentUser.username||""),name:String(PR_currentUser.name||""),method,amount,trx,sender,proofUrl:proof,status:"pending",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        await PR_addNotification(PR_currentUser.id,"VIP Payment Submitted","আপনার VIP payment admin review-এর জন্য পাঠানো হয়েছে।");
+        PR_closeVipPayment(); Swal.fire("Submitted","VIP payment pending। Admin approve করলে VIP automatically active হবে।","success");
+    }catch(e){console.error(e);Swal.fire("Error",e.message||"VIP payment submit failed","error");}
+};
+
+window.PR_loadAdminVipPayments=async function(){
+    if(!PR_isAdmin()||!PR_db)return; const box=document.getElementById("prAdminVipPayments");if(!box)return;box.innerHTML="<div class='pr-ref-empty'>Loading...</div>";
+    try{const snap=await PR_db.collection("vipPayments").limit(100).get();const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));rows.sort((a,b)=>{const ta=a.createdAt?.toMillis?a.createdAt.toMillis():new Date(a.createdAt||0).getTime();const tb=b.createdAt?.toMillis?b.createdAt.toMillis():new Date(b.createdAt||0).getTime();return tb-ta;});
+      box.innerHTML=rows.length?rows.map(p=>`<div class="pr-card" style="padding:12px;margin:8px 0"><b>${PR_escapeHtml(p.name||p.username||p.userId)}</b> • @${PR_escapeHtml(p.username||"")}<br><span style="font-size:12px;color:var(--muted)">${PR_escapeHtml(p.method||"")} • ৳${Number(p.amount||0).toFixed(0)} • TRX: ${PR_escapeHtml(p.trx||"")} • Sender: ${PR_escapeHtml(p.sender||"")}</span><br><span style="font-size:12px">Status: <b>${PR_escapeHtml(p.status||"pending")}</b></span>${p.proofUrl?`<br><a href="${PR_escapeHtml(p.proofUrl)}" target="_blank" rel="noopener" class="pr-btn" style="display:inline-block;margin-top:7px;text-decoration:none">Proof</a>`:""}${String(p.status)==="pending"?`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px"><button class="pr-btn success" onclick="PR_adminApproveVip('${String(p.id).replace(/'/g,"\\'")}')">Approve & VIP</button><button class="pr-btn" style="background:#7a2020" onclick="PR_adminRejectVip('${String(p.id).replace(/'/g,"\\'")}')">Reject</button></div>`:""}</div>`).join(""):"<div class='pr-ref-empty'>কোনো VIP payment নেই।</div>";
+    }catch(e){console.error(e);box.innerHTML="<div class='pr-ref-empty'>VIP payment load failed.</div>";}
+};
+window.PR_adminApproveVip=async function(id){
+    if(!PR_isAdmin())return; try{const ref=PR_db.collection("vipPayments").doc(String(id));await PR_db.runTransaction(async tx=>{const snap=await tx.get(ref);if(!snap.exists)throw new Error("NOT_FOUND");const p=snap.data()||{};if(String(p.status)!=="pending")throw new Error("ALREADY_PROCESSED");const uref=PR_db.collection("users").doc(String(p.userId));const us=await tx.get(uref);if(!us.exists)throw new Error("USER_NOT_FOUND");tx.update(uref,{isVip:true,vipActivatedAt:new Date().toISOString(),vipPrice:Number(p.amount||200)});tx.update(ref,{status:"approved",approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:String(PR_currentUser.id)});});await PR_addNotification(String((await PR_db.collection("vipPayments").doc(String(id)).get()).data()?.userId||""),"👑 VIP Activated","আপনার ৳200 lifetime VIP membership active হয়েছে। এখন 50 ads/day এবং Paid Tasks access পাবেন।");if(String(PR_currentUser.id)===String((await PR_db.collection("vipPayments").doc(String(id)).get()).data()?.userId||"")){PR_currentUser.isVip=true;}await PR_loadAdminVipPayments();PR_updateUI();PR_renderVipState();Swal.fire("Approved","VIP active হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"VIP approve failed","error");}
+};
+window.PR_adminRejectVip=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("vipPayments").doc(String(id));await ref.update({status:"rejected",rejectedAt:firebase.firestore.FieldValue.serverTimestamp(),rejectedBy:String(PR_currentUser.id)});const p=(await ref.get()).data()||{};await PR_addNotification(String(p.userId||""),"VIP Payment Rejected","আপনার VIP payment reject করা হয়েছে। তথ্য ঠিক থাকলে আবার payment submit করতে পারেন।");await PR_loadAdminVipPayments();Swal.fire("Rejected","VIP payment rejected হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"VIP reject failed","error");}};
+
+window.PR_adminLoadApprovedTasks=async function(){
+    if(!PR_isAdmin()||!PR_db)return; const box=document.getElementById("prAdminApprovedTasks");if(!box)return;
+    try{const snap=await PR_db.collection("tasks").where("status","==","approved").get();const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));box.innerHTML=rows.length?rows.map(t=>`<div class="pr-card" style="padding:12px;margin:8px 0"><b>${PR_escapeHtml(t.name||"Task")}</b><div style="font-size:11px;color:var(--muted);margin:5px 0">Limit ${Number(t.limit||0)} • ৳${Number(t.rate||t.reward||0).toFixed(2)}/user • Completed ${Number(t.completedCount||0)}</div><div style="font-size:12px;margin-bottom:8px">${PR_escapeHtml(t.details||"")}</div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="pr-btn warning" onclick="PR_adminEditTask('${String(t.id).replace(/'/g,"\\'")}')">Edit</button><button class="pr-btn" style="background:#7a2020" onclick="PR_adminDeleteApprovedTask('${String(t.id).replace(/'/g,"\\'")}')">Delete</button></div></div>`).join(""):"<div class='pr-ref-empty'>কোনো approved task নেই।</div>";}catch(e){box.innerHTML="<div class='pr-ref-empty'>Approved task load failed.</div>";}
+};
+window.PR_adminEditTask=async function(id){if(!PR_isAdmin())return;try{const ref=PR_db.collection("tasks").doc(String(id));const snap=await ref.get();if(!snap.exists)throw new Error("NOT_FOUND");const t=snap.data()||{};const html=`<input id="swTaskName" class="swal2-input" value="${PR_escapeHtml(t.name||"")}" placeholder="Task name"><input id="swTaskLink" class="swal2-input" value="${PR_escapeHtml(t.link||"")}" placeholder="Task URL"><input id="swTaskLimit" class="swal2-input" type="number" min="1" value="${Number(t.limit||1)}" placeholder="Limit"><input id="swTaskRate" class="swal2-input" type="number" min="0.01" step="0.01" value="${Number(t.rate||t.reward||0)}" placeholder="Rate"><textarea id="swTaskDetails" class="swal2-textarea" placeholder="Details">${PR_escapeHtml(t.details||"")}</textarea>`;const r=await Swal.fire({title:"Edit Task",html,focusConfirm:false,showCancelButton:true,confirmButtonText:"Save",preConfirm:()=>({name:document.getElementById("swTaskName").value.trim(),link:document.getElementById("swTaskLink").value.trim(),limit:Number(document.getElementById("swTaskLimit").value),rate:Number(document.getElementById("swTaskRate").value),details:document.getElementById("swTaskDetails").value.trim()})});if(!r.isConfirmed)return;if(!r.value.name||!r.value.link||r.value.limit<1||r.value.rate<=0)throw new Error("সব field সঠিকভাবে দিন");await ref.update({name:r.value.name,link:r.value.link,limit:r.value.limit,rate:r.value.rate,reward:r.value.rate,totalBudget:PR_taskTotal(r.value.limit,r.value.rate),details:r.value.details,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_adminLoadApprovedTasks();Swal.fire("Saved","Task update হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Edit failed","error");}};
+window.PR_adminDeleteApprovedTask=async function(id){if(!PR_isAdmin())return;const r=await Swal.fire({title:"Delete task?",text:"এই live task delete হবে।",icon:"warning",showCancelButton:true,confirmButtonText:"Delete"});if(!r.isConfirmed)return;try{await PR_db.collection("tasks").doc(String(id)).update({status:"deleted",deletedAt:firebase.firestore.FieldValue.serverTimestamp()});await PR_loadApprovedTasks();await PR_adminLoadApprovedTasks();Swal.fire("Deleted","Task deleted হয়েছে।","success");}catch(e){Swal.fire("Error",e.message||"Delete failed","error");}};
+
+// Add VIP fields to existing user state without changing existing Firebase structure.
+const _PR_originalUpdateUI=PR_updateUI;
+PR_updateUI=function(){
+    try{PR_syncDailyAdCount();}catch(e){}
+    _PR_originalUpdateUI();
+    PR_renderVipState();
+    const profileName=document.getElementById("prProfileName");
+    if(profileName){const base=PR_currentUser.name||"User";profileName.textContent=base+(PR_currentUser.manualBadges&&PR_currentUser.manualBadges.length?" • "+String(PR_currentUser.manualBadges[PR_currentUser.manualBadges.length-1]):"");}
+};
+
+// Keep task access available, but show VIP status clearly; Free users remain ad-only for earning.
+const _PR_originalRenderTasks=PR_renderTasks;
+PR_renderTasks=function(){_PR_originalRenderTasks();const form=document.getElementById("prUserTaskForm");if(form){form.style.display=PR_currentUser.isVip?form.style.display:"none";}const title=document.querySelector('#prTask h2');if(title){const old=document.getElementById("prVipEarnNote");if(!old){const d=document.createElement("div");d.id="prVipEarnNote";d.style="color:var(--muted);font-size:12px;margin:6px 0 10px";d.textContent=PR_currentUser.isVip?"👑 VIP: 50 ads/day + Paid Tasks":"FREE: 30 ads/day • VIP members get Paid Tasks access";title.parentNode.insertBefore(d,title.nextSibling);}}};
+
+// Prevent Free users from opening paid-task creation.
+const _PR_openUserTaskForm=window.PR_openUserTaskForm;
+
+// Rebind correctly without relying on optional chaining helper semantics.
+window.PR_openUserTaskForm=function(){
+    if(!PR_currentUser.isVip)return Swal.fire("VIP Required","Paid Task access শুধু VIP members-এর জন্য। VIP ৳200 lifetime কিনুন।","info");
+    const f=document.getElementById("prUserTaskForm");if(f)f.style.display="block";
+};
+
+const _PR_originalJoinTask=window.PR_joinTask;
+window.PR_joinTask=async function(taskId,link,taskRewardArg,isPaid){
+    if(!PR_currentUser.isVip)return Swal.fire("VIP Required","Task access শুধু VIP members-এর জন্য। VIP ৳200 lifetime কিনুন।","info");
+    return _PR_originalJoinTask(taskId,link,taskRewardArg,isPaid);
+};
+
+
+// Admin initialization additions.
+const _PR_setupAdminUI=PR_setupAdminUI;
+PR_setupAdminUI=function(){_PR_setupAdminUI();if(PR_isAdmin()){setTimeout(()=>{PR_loadAdminVipPayments();PR_adminLoadApprovedTasks();},300);}};
+
+// Badge at the end of username on home/profile.
+const _PR_oldHomeNameUpdate=PR_updateUI;
+
+// Ensure existing/new users get non-destructive VIP/ad fields saved when loaded.
+const _PR_origInitUser=PR_initUser;
+PR_initUser=async function(){await _PR_origInitUser();try{if(PR_db&&PR_currentUser.id){const patch={};if(typeof PR_currentUser.isVip!=="boolean")patch.isVip=false;if(PR_currentUser.dailyAdsWatched==null)patch.dailyAdsWatched=0;if(!PR_currentUser.adDay)patch.adDay=new Date().toISOString().slice(0,10);if(Object.keys(patch).length)await PR_getCurrentUserRef().set(patch,{merge:true});}}catch(e){console.warn("Upgrade field sync",e);}PR_updateUI();PR_renderVipState();};
 
 
 })();
